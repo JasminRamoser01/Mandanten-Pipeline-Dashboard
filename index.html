@@ -86,8 +86,8 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── SUMMARY ── */
-.sb { display: flex; gap: 12px; margin-bottom: 20px; }
-.sc { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; flex: 1; }
+.sb { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.sc { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; flex: 1; min-width: 150px; }
 .sc .n { font-size: 22px; font-weight: 600; font-family: var(--mono); line-height: 1; margin-bottom: 4px; }
 .sc .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 
@@ -174,10 +174,11 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
   <div id="ec"></div>
 
   <div class="sb">
-    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals gesamt</div></div>
-    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Aktive Stages</div></div>
-    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">&Oslash; Tage in Stage</div></div>
-    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l">Bewegt (7 Tage)</div></div>
+    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals (6M)</div></div>
+    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Deal Value (6M)</div></div>
+    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">+Value (4W)</div></div>
+    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l">&Oslash; Pipeline</div></div>
+    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l">Win Rate</div></div>
   </div>
 
   <div class="tabs">
@@ -251,6 +252,14 @@ function badge(days) {
   const c = days <= 7 ? 'dl' : days <= 21 ? 'dm' : 'dh';
   return `<span class="db ${c}">${days}d</span>`;
 }
+function daysBetween(from, to) {
+  if (!from || !to) return null;
+  return Math.max(0, Math.floor((new Date(to) - new Date(from)) / 86400000));
+}
+function fmtCurrency(v) {
+  if (v === null || v === undefined) return '—';
+  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+}
 function sw(t) {
   document.querySelectorAll('.tab').forEach((el, i) =>
     el.classList.toggle('active', (i === 0 && t === 'st') || (i === 1 && t === 'dy'))
@@ -280,13 +289,12 @@ async function fetchEntries() {
   return allData;
 }
 
-// ── RECORD NAME LOOKUP ────────────────────────────────────────────────────────
-// The list entries query doesn't return the parent record's name, so we batch-
-// fetch the parent records separately and build a { record_id -> name } map.
-async function loadRecordNames(rawEntries) {
-  const nameMap = {};
+// ── RECORD DATA LOOKUP ───────────────────────────────────────────────────────
+// Batch-fetch parent records to get name + deal value (both unavailable on
+// list entries directly). Returns { record_id -> { name, value } }.
+async function loadRecordData(rawEntries) {
+  const dataMap = {};
 
-  // Group unique IDs by object slug (usually "deals")
   const byObject = {};
   rawEntries.forEach(e => {
     if (!e.parent_record_id) return;
@@ -297,7 +305,6 @@ async function loadRecordNames(rawEntries) {
 
   for (const [slug, idSet] of Object.entries(byObject)) {
     const ids = [...idSet];
-    // Process in chunks of 100 to keep request bodies small
     for (let i = 0; i < ids.length; i += 100) {
       const chunk = ids.slice(i, i + 100);
       try {
@@ -313,28 +320,26 @@ async function loadRecordNames(rawEntries) {
           const name = rec.values?.name?.[0]?.value
                     || rec.values?.name?.[0]?.text
                     || rec.values?.name?.[0]?.full_name
-                    || rec.values?.deal_name?.[0]?.value;
-          if (id && name) nameMap[id] = name;
+                    || rec.values?.deal_name?.[0]?.value
+                    || null;
+          const value = rec.values?.value?.[0]?.currency_value ?? null;
+          if (id) dataMap[id] = { name, value };
         });
-      } catch (_) {
-        // Best-effort; dashboard still works without names
-      }
+      } catch (_) {}
     }
   }
 
-  return nameMap;
+  return dataMap;
 }
 
 // ── PARSE ENTRY ───────────────────────────────────────────────────────────────
-// entry_values: { bplus_stage: [{status:{title}}], created_at: [{value}] }
-// Name comes from the parent record via nameMap (see loadRecordNames above)
-function parseEntry(e, nameMap = {}) {
-  let name = '—';
+// entry_values: { bplus_stage: [{status:{title}, active_from}], created_at: [{value}] }
+// Name + value come from the parent record via dataMap (see loadRecordData above)
+function parseEntry(e, dataMap = {}) {
+  const recData = (e.parent_record_id && dataMap[e.parent_record_id]) || {};
 
-  // Primary: name resolved via parent record batch fetch
-  if (e.parent_record_id && nameMap[e.parent_record_id]) {
-    name = nameMap[e.parent_record_id];
-  } else {
+  let name = recData.name || '—';
+  if (name === '—') {
     try {
       const candidates = [
         e.entry_values?.name?.[0]?.value,
@@ -351,6 +356,8 @@ function parseEntry(e, nameMap = {}) {
       }
     } catch (_) {}
   }
+
+  const value = recData.value ?? null;
 
   // Stage + stage_changed_at (active_from = when this stage was set)
   let stage = null, stageChangedAt = null;
@@ -369,7 +376,7 @@ function parseEntry(e, nameMap = {}) {
     ? `${ATTIO_BASE}/lists/${LIST_ID}/${e.parent_record_id}`
     : null;
 
-  return { name, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link: recordLink, id: e.id?.entry_id };
+  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link: recordLink, id: e.id?.entry_id };
 }
 
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
@@ -382,28 +389,32 @@ function renderStatic(deals) {
     byStage[s].push(d);
   });
 
-  let html = '', totalDays = 0, cnt = 0, activeStages = 0;
+  let html = '';
 
   STAGE_ORDER.forEach(stage => {
     const items = byStage[stage] || [];
     if (!items.length) return;
-    activeStages++;
     const col = STAGE_COLORS[stage] || '#8a8a8a';
+
+    // Ø days in current stage (since stage_changed_at, fallback created_at)
+    const stageDays = items.map(d => daysSince(d.stage_changed_at || d.created_at)).filter(d => d !== null);
+    const avgDays = stageDays.length ? Math.round(stageDays.reduce((a,b) => a+b,0) / stageDays.length) : null;
+
     html += `<div class="ss">
       <div class="sh">
         <span class="dot" style="background:${col}"></span>
         <span class="sl">${stage}</span>
-        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}</span>
+        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}${avgDays !== null ? ` · Ø ${avgDays}d in Stage` : ''}</span>
       </div>`;
     items.forEach(d => {
-      const days = daysSince(d.created_at);
-      if (days !== null) { totalDays += days; cnt++; }
+      const daysInStage = daysSince(d.stage_changed_at || d.created_at);
+      const valStr = d.value && d.value > 0 ? fmtCurrency(d.value) + ' · ' : '';
       const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
       const endTag = d.link ? 'a' : 'div';
       html += `<${tag} class="dr">
         <div class="dn">${d.name}</div>
-        <div class="da">Seit ${fmtDate(d.created_at)}</div>
-        ${badge(days)}
+        <div class="da">${valStr}Seit ${fmtDate(d.created_at)}</div>
+        ${badge(daysInStage)}
       </${endTag}>`;
     });
     html += `</div>`;
@@ -411,9 +422,6 @@ function renderStatic(deals) {
 
   if (!html) html = `<div class="empty">Keine Deals gefunden.</div>`;
   document.getElementById('tst').innerHTML = html;
-  document.getElementById('s1').textContent = deals.length;
-  document.getElementById('s2').textContent = activeStages;
-  document.getElementById('s3').textContent = cnt > 0 ? Math.round(totalDays / cnt) + 'd' : '—';
 }
 
 // ── RENDER: DYNAMIC ───────────────────────────────────────────────────────────
@@ -433,7 +441,6 @@ function renderDynamic(deals) {
       return ta - tb;
     });
 
-  document.getElementById('s4').textContent = recent.length;
 
   if (!recent.length) {
     document.getElementById('tdy').innerHTML = `<div class="empty">Keine Aktivität in den letzten 7 Tagen.</div>`;
@@ -479,13 +486,35 @@ async function loadData() {
 
   try {
     const raw     = await fetchEntries();
-    const nameMap = await loadRecordNames(raw);
-    const deals   = raw.map(e => parseEntry(e, nameMap));
+    const dataMap = await loadRecordData(raw);
+    const deals   = raw.map(e => parseEntry(e, dataMap));
     renderStatic(deals);
     renderDynamic(deals);
-    const now = new Date();
+
+    // ── KPIs ────────────────────────────────────────────────────────────────
+    const now      = Date.now();
+    const ms6M     = 180 * 86400000;
+    const ms4W     = 28  * 86400000;
+    const deals6M  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
+    const deals4W  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
+    const uebern   = deals.filter(d => d.stage === 'Übernommen' && d.stage_changed_at && d.created_at);
+    const keinFit  = deals.filter(d => d.stage === 'Kein Fit').length;
+    const avgPipe  = uebern.length
+      ? Math.round(uebern.reduce((s,d) => s + (daysBetween(d.created_at, d.stage_changed_at)||0), 0) / uebern.length)
+      : null;
+    const winPct   = (uebern.length + keinFit)
+      ? Math.round(uebern.length / (uebern.length + keinFit) * 100)
+      : null;
+
+    document.getElementById('s1').textContent = deals6M.length;
+    document.getElementById('s2').textContent = fmtCurrency(deals6M.reduce((s,d) => s+(d.value||0),0));
+    document.getElementById('s3').textContent = fmtCurrency(deals4W.reduce((s,d) => s+(d.value||0),0));
+    document.getElementById('s4').textContent = avgPipe !== null ? avgPipe + 'd' : '—';
+    document.getElementById('s5').textContent = winPct  !== null ? winPct  + '%' : '—';
+
+    const ts = new Date();
     document.getElementById('lu').textContent =
-      `Aktualisiert ${now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · ${deals.length} Einträge`;
+      `Aktualisiert ${ts.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · ${deals.length} Einträge`;
   } catch (err) {
     console.error(err);
     let msg = err.message;
