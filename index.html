@@ -495,7 +495,7 @@ async function loadData() {
     document.getElementById('tst').innerHTML = `<div class="empty">Fehler beim Laden.</div>`;
     document.getElementById('tdy').innerHTML = `<div class="empty">Fehler beim Laden.</div>`;
     document.getElementById('lu').textContent = 'Fehler';
-    if (err.message.includes('API-Key')) setTimeout(resetKey, 2000);
+    if (err.message.includes('Ungültiger API-Key')) setTimeout(resetKey, 2000);
   } finally {
     btn.disabled = false;
     ri.classList.remove('spin');
