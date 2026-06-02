@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>bplus Pipeline Dashboard</title>
+<title>Mandanten Pipeline Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -71,8 +71,9 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .main { display: none; }
 .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
 .header-left { display: flex; align-items: center; gap: 12px; }
+.title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
 .t1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -.3px; }
-.t2 { font-size: 12px; color: var(--muted); margin: 2px 0 0; font-family: var(--mono); }
+.t2 { font-size: 12px; color: var(--muted); margin: 0; font-family: var(--mono); }
 .hacts { display: flex; gap: 8px; align-items: center; }
 .rl { font-size: 12px; color: var(--subtle); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; font-family: var(--font); }
 .rl:hover { color: var(--muted); }
@@ -84,6 +85,12 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .btn:disabled { opacity: .5; pointer-events: none; }
 .spin { animation: spin .8s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CLIENT SWITCHER ── */
+.csw { display: flex; gap: 4px; }
+.csbtn { background: none; border: 1px solid var(--border-strong); color: var(--muted); font-family: var(--font); font-size: 11px; font-weight: 500; padding: 4px 10px; cursor: pointer; transition: all .15s; }
+.csbtn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.csbtn:hover:not(.active) { border-color: var(--brand); color: var(--fg); }
 
 /* ── SUMMARY ── */
 .sb { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -118,7 +125,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .af { display: flex; flex-direction: column; gap: 6px; }
 .ai { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; transition: border-color .15s; }
 .ai:hover { border-color: rgba(67,111,255,.35); }
-.aic { width: 28px; height: 28px; background: var(--brand-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+.aic { width: 28px; height: 28px; background: var(--brand-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
 .ab { flex: 1; }
 .at { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
 .am { font-size: 11px; color: var(--muted); font-family: var(--mono); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -139,7 +146,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 <div class="setup" id="setup">
   <div class="setup-logo">
     <svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>
-    <strong>bplus Pipeline Dashboard</strong>
+    <strong>Mandanten Pipeline Dashboard</strong>
   </div>
   <h2>Attio API-Key eingeben</h2>
   <p>Der Key wird nur lokal in deinem Browser gespeichert (<code style="font-family:var(--mono);font-size:11px">localStorage</code>) und direkt an die Attio API gesendet — nirgendwo sonst hin.</p>
@@ -161,7 +168,10 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
     <div class="header-left">
       <svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>
       <div>
-        <p class="t1">bplus Pipeline</p>
+        <div class="title-row">
+          <p class="t1" id="pname">Pipeline</p>
+          <div id="csw" class="csw"></div>
+        </div>
         <p class="t2" id="lu">Wird geladen&hellip;</p>
       </div>
     </div>
@@ -191,20 +201,61 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const LIST_ID = '06558c4e-ce5f-4cc7-af10-518707ccf662';
 const ATTIO_BASE = 'https://app.attio.com';
 
-const STAGE_COLORS = {
-  'Neuer Mandant': '#436fff',
-  'Erstgespräch':  '#22a05b',
-  'Angebot':       '#d97706',
-  'Vertrag':       '#8b5cf6',
-  'Übernommen':    '#166534',
-  'Warteliste':    '#6a6b68',
-  'Kein Fit':      '#e53e3e',
-};
-const STAGE_ORDER  = ['Neuer Mandant','Erstgespräch','Angebot','Vertrag','Übernommen','Warteliste','Kein Fit'];
-const STAGE_ICONS  = {'Neuer Mandant':'🟦','Erstgespräch':'🟢','Angebot':'🟡','Vertrag':'🟣','Übernommen':'✅','Warteliste':'⏸️','Kein Fit':'🔴'};
+const CLIENTS = [
+  {
+    id: 'bplus',
+    name: 'bplus',
+    type: 'list',
+    listId: '06558c4e-ce5f-4cc7-af10-518707ccf662',
+    stageField: 'bplus_stage',
+    winStage: 'Übernommen',
+    stageOrder: ['Neuer Mandant','Erstgespräch','Angebot','Vertrag','Übernommen','Warteliste','Kein Fit'],
+    stageColors: {
+      'Neuer Mandant':'#436fff','Erstgespräch':'#22a05b','Angebot':'#d97706',
+      'Vertrag':'#8b5cf6','Übernommen':'#166534','Warteliste':'#6a6b68','Kein Fit':'#e53e3e',
+    },
+    stageIcons: {
+      'Neuer Mandant':'🟦','Erstgespräch':'🟢','Angebot':'🟡','Vertrag':'🟣',
+      'Übernommen':'✅','Warteliste':'⏸️','Kein Fit':'🔴',
+    },
+  },
+  {
+    id: 'limetax',
+    name: 'Limetax',
+    type: 'records',
+    objectSlug: 'deals',
+    stageField: 'stage',
+    winStage: 'Übergeben',
+    stageOrder: ['Neue Anfrage','Erstgespräch','Übergeben','Warteliste','Kein Fit'],
+    stageColors: {
+      'Neue Anfrage':'#436fff','Erstgespräch':'#22a05b','Übergeben':'#166534',
+      'Warteliste':'#6a6b68','Kein Fit':'#e53e3e',
+    },
+    stageIcons: {
+      'Neue Anfrage':'🟦','Erstgespräch':'🟢','Übergeben':'✅','Warteliste':'⏸️','Kein Fit':'🔴',
+    },
+  },
+];
+
+// ── CLIENT STATE ──────────────────────────────────────────────────────────────
+let activeClientId = localStorage.getItem('active_client') || 'bplus';
+function getClient() { return CLIENTS.find(c => c.id === activeClientId) || CLIENTS[0]; }
+
+function renderClientSwitcher() {
+  document.getElementById('pname').textContent = `${getClient().name} Pipeline`;
+  document.getElementById('csw').innerHTML = CLIENTS.map(c =>
+    `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${c.name}</button>`
+  ).join('');
+}
+
+function switchClient(id) {
+  activeClientId = id;
+  localStorage.setItem('active_client', id);
+  renderClientSwitcher();
+  loadData();
+}
 
 // ── KEY MANAGEMENT ────────────────────────────────────────────────────────────
 let apiKey = localStorage.getItem('attio_bplus_key') || '';
@@ -216,6 +267,7 @@ function saveKey() {
   localStorage.setItem('attio_bplus_key', v);
   document.getElementById('setup').style.display = 'none';
   document.getElementById('main').style.display = 'block';
+  renderClientSwitcher();
   loadData();
 }
 function resetKey() {
@@ -268,11 +320,11 @@ function sw(t) {
   document.getElementById('tdy').classList.toggle('active', t === 'dy');
 }
 
-// ── ATTIO API ─────────────────────────────────────────────────────────────────
-async function fetchEntries() {
-  let allData = [], offset = 0;
+// ── ATTIO API: LIST ENTRIES (bplus) ──────────────────────────────────────────
+async function fetchListEntries(client) {
+  let all = [], offset = 0;
   while (true) {
-    const r = await fetch(`https://api.attio.com/v2/lists/${LIST_ID}/entries/query`, {
+    const r = await fetch(`https://api.attio.com/v2/lists/${client.listId}/entries/query`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ limit: 500, offset })
@@ -282,19 +334,39 @@ async function fetchEntries() {
     if (!r.ok) throw new Error(`Attio API Fehler ${r.status}: ${r.statusText}`);
     const j = await r.json();
     const batch = j.data || [];
-    allData = allData.concat(batch);
+    all = all.concat(batch);
     if (batch.length < 500) break;
     offset += 500;
   }
-  return allData;
+  return all;
 }
 
-// ── RECORD DATA LOOKUP ───────────────────────────────────────────────────────
-// Batch-fetch parent records to get name + deal value (both unavailable on
-// list entries directly). Returns { record_id -> { name, value } }.
+// ── ATTIO API: RECORDS (Limetax — Deals ohne Kanzlei-Referenz) ──────────────
+async function fetchRecords(client) {
+  let all = [], offset = 0;
+  while (true) {
+    const r = await fetch(`https://api.attio.com/v2/objects/${client.objectSlug}/records/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 500, offset })
+    });
+    if (r.status === 401) throw new Error('Ungültiger API-Key — bitte prüfen und neu eingeben.');
+    if (r.status === 403) throw new Error('Fehlende Berechtigungen — bitte API-Key Scopes prüfen (record_permission:read, object_configuration:read, list_entry:read).');
+    if (!r.ok) throw new Error(`Attio API Fehler ${r.status}: ${r.statusText}`);
+    const j = await r.json();
+    const fullBatch = j.data || [];
+    // Limetax = Deals ohne Kanzlei-Referenz
+    all = all.concat(fullBatch.filter(rec => !rec.values?.kanzlei?.length));
+    if (fullBatch.length < 500) break;
+    offset += 500;
+  }
+  return all;
+}
+
+// ── RECORD DATA LOOKUP (nur für Listen-basierte Clients) ─────────────────────
+// Batch-fetch parent records → { record_id: { name, value } }
 async function loadRecordData(rawEntries) {
   const dataMap = {};
-
   const byObject = {};
   rawEntries.forEach(e => {
     if (!e.parent_record_id) return;
@@ -302,7 +374,6 @@ async function loadRecordData(rawEntries) {
     if (!byObject[slug]) byObject[slug] = new Set();
     byObject[slug].add(e.parent_record_id);
   });
-
   for (const [slug, idSet] of Object.entries(byObject)) {
     const ids = [...idSet];
     for (let i = 0; i < ids.length; i += 100) {
@@ -317,89 +388,68 @@ async function loadRecordData(rawEntries) {
         const j = await r.json();
         (j.data || []).forEach(rec => {
           const id = rec.id?.record_id;
-          const name = rec.values?.name?.[0]?.value
-                    || rec.values?.name?.[0]?.text
-                    || rec.values?.name?.[0]?.full_name
-                    || rec.values?.deal_name?.[0]?.value
-                    || null;
+          const name = rec.values?.name?.[0]?.value || rec.values?.name?.[0]?.text
+                    || rec.values?.name?.[0]?.full_name || null;
           const value = rec.values?.value?.[0]?.currency_value ?? null;
           if (id) dataMap[id] = { name, value };
         });
       } catch (_) {}
     }
   }
-
   return dataMap;
 }
 
-// ── PARSE ENTRY ───────────────────────────────────────────────────────────────
-// entry_values: { bplus_stage: [{status:{title}, active_from}], created_at: [{value}] }
-// Name + value come from the parent record via dataMap (see loadRecordData above)
-function parseEntry(e, dataMap = {}) {
+// ── PARSE: LIST ENTRY (bplus) ─────────────────────────────────────────────────
+function parseListEntry(e, dataMap, client) {
   const recData = (e.parent_record_id && dataMap[e.parent_record_id]) || {};
-
   let name = recData.name || '—';
   if (name === '—') {
     try {
-      const candidates = [
-        e.entry_values?.name?.[0]?.value,
-        e.entry_values?.name?.[0]?.text,
-        e.entry_values?.deal_name?.[0]?.value,
-        e.record_name,
-        e.name,
-      ];
-      for (const c of candidates) {
+      for (const c of [e.entry_values?.name?.[0]?.value, e.entry_values?.name?.[0]?.text, e.record_name, e.name]) {
         if (c && typeof c === 'string' && c.trim()) { name = c.trim(); break; }
       }
-      if (name === '—' && e.parent_record_id) {
-        name = `Deal ${e.parent_record_id.slice(0, 8)}…`;
-      }
+      if (name === '—' && e.parent_record_id) name = `Deal ${e.parent_record_id.slice(0, 8)}…`;
     } catch (_) {}
   }
-
   const value = recData.value ?? null;
-
-  // Stage + stage_changed_at (active_from = when this stage was set)
-  let stage = null, stageChangedAt = null;
-  try {
-    const sv = e.entry_values?.bplus_stage;
-    stage = sv?.[0]?.status?.title || sv?.[0]?.title || null;
-    stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
-  } catch (_) {}
-
-  // Timestamps — prefer stageChangedAt so "Letzte 7 Tage" reflects actual moves
+  const sv = e.entry_values?.[client.stageField];
+  const stage = sv?.[0]?.status?.title || sv?.[0]?.title || null;
+  const stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
   const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
   const updated = stageChangedAt || e.updated_at || created;
+  const link = e.parent_record_id ? `${ATTIO_BASE}/lists/${client.listId}/${e.parent_record_id}` : null;
+  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link, id: e.id?.entry_id };
+}
 
-  // Attio record link
-  const recordLink = e.parent_record_id
-    ? `${ATTIO_BASE}/lists/${LIST_ID}/${e.parent_record_id}`
-    : null;
-
-  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link: recordLink, id: e.id?.entry_id };
+// ── PARSE: RECORD (Limetax) ───────────────────────────────────────────────────
+function parseRecord(rec, client) {
+  const name = rec.values?.name?.[0]?.value || '—';
+  const value = rec.values?.value?.[0]?.currency_value ?? null;
+  const sv = rec.values?.[client.stageField];
+  const stage = sv?.[0]?.status?.title || null;
+  const stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
+  const created = rec.values?.created_at?.[0]?.value || rec.created_at || null;
+  const updated = stageChangedAt || rec.updated_at || created;
+  const link = rec.id?.record_id ? `${ATTIO_BASE}/deals/${rec.id.record_id}` : null;
+  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link, id: rec.id?.record_id };
 }
 
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
-function renderStatic(deals) {
+function renderStatic(deals, client) {
   const byStage = {};
-  STAGE_ORDER.forEach(s => byStage[s] = []);
+  client.stageOrder.forEach(s => byStage[s] = []);
   deals.forEach(d => {
     const s = d.stage || 'Unbekannt';
     if (!byStage[s]) byStage[s] = [];
     byStage[s].push(d);
   });
-
   let html = '';
-
-  STAGE_ORDER.forEach(stage => {
+  client.stageOrder.forEach(stage => {
     const items = byStage[stage] || [];
     if (!items.length) return;
-    const col = STAGE_COLORS[stage] || '#8a8a8a';
-
-    // Ø days in current stage (since stage_changed_at, fallback created_at)
+    const col = client.stageColors[stage] || '#8a8a8a';
     const stageDays = items.map(d => daysSince(d.stage_changed_at || d.created_at)).filter(d => d !== null);
     const avgDays = stageDays.length ? Math.round(stageDays.reduce((a,b) => a+b,0) / stageDays.length) : null;
-
     html += `<div class="ss">
       <div class="sh">
         <span class="dot" style="background:${col}"></span>
@@ -419,37 +469,28 @@ function renderStatic(deals) {
     });
     html += `</div>`;
   });
-
   if (!html) html = `<div class="empty">Keine Deals gefunden.</div>`;
   document.getElementById('tst').innerHTML = html;
 }
 
 // ── RENDER: DYNAMIC ───────────────────────────────────────────────────────────
-function renderDynamic(deals) {
+function renderDynamic(deals, client) {
   const cutoff = new Date(Date.now() - 7 * 86400000);
-
-  // Show deals where either updated_at OR created_at falls within 7 days
   const recent = deals
     .filter(d => {
       const u = d.updated_at ? new Date(d.updated_at) : null;
       const c = d.created_at ? new Date(d.created_at) : null;
       return (u && u >= cutoff) || (c && c >= cutoff);
     })
-    .sort((a, b) => {
-      const ta = new Date(b.updated_at || b.created_at);
-      const tb = new Date(a.updated_at || a.created_at);
-      return ta - tb;
-    });
-
+    .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
 
   if (!recent.length) {
     document.getElementById('tdy').innerHTML = `<div class="empty">Keine Aktivität in den letzten 7 Tagen.</div>`;
     return;
   }
-
   let html = `<div class="af">`;
   recent.forEach(d => {
-    const icon = STAGE_ICONS[d.stage] || '📋';
+    const icon = client.stageIcons[d.stage] || '📋';
     const stageLbl = d.stage || '—';
     const isNew = d.created_at && new Date(d.created_at) >= cutoff;
     const pillClass = isNew ? 'cp' : 'cp changed';
@@ -458,7 +499,6 @@ function renderDynamic(deals) {
     const daysInStage = daysSince(d.stage_changed_at || d.created_at);
     const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
     const endTag = d.link ? 'a' : 'div';
-
     html += `<${tag} class="ai">
       <div class="aic">${icon}</div>
       <div class="ab">
@@ -475,6 +515,7 @@ function renderDynamic(deals) {
 
 // ── LOAD ──────────────────────────────────────────────────────────────────────
 async function loadData() {
+  const client = getClient();
   const btn = document.getElementById('rb');
   const ri  = document.getElementById('ri');
   btn.disabled = true;
@@ -484,29 +525,33 @@ async function loadData() {
   document.getElementById('tdy').innerHTML = '<div class="sk"></div><div class="sk"></div>';
 
   try {
-    const raw     = await fetchEntries();
-    const dataMap = await loadRecordData(raw);
-    const deals   = raw.map(e => parseEntry(e, dataMap));
-    renderStatic(deals);
-    renderDynamic(deals);
+    let deals;
+    if (client.type === 'list') {
+      const raw     = await fetchListEntries(client);
+      const dataMap = await loadRecordData(raw);
+      deals = raw.map(e => parseListEntry(e, dataMap, client));
+    } else {
+      const raw = await fetchRecords(client);
+      deals = raw.map(rec => parseRecord(rec, client));
+    }
 
-    // ── KPIs ────────────────────────────────────────────────────────────────
-    const now      = Date.now();
-    const ms6M     = 180 * 86400000;
-    const ms4W     = 28  * 86400000;
-    const deals6M  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
-    const deals4W  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
-    // Ø Pipeline: nur Deals die tatsächlich durch die Pipeline gelaufen sind (>0 Tage)
-    const uebern    = deals.filter(d => d.stage === 'Übernommen' && d.stage_changed_at && d.created_at);
-    const pipeDeals = uebern.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
+    renderStatic(deals, client);
+    renderDynamic(deals, client);
+
+    // ── KPIs ──────────────────────────────────────────────────────────────────
+    const now       = Date.now();
+    const ms6M      = 180 * 86400000;
+    const ms4W      = 28  * 86400000;
+    const deals6M   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
+    const deals4W   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
+    const gewonnen  = deals.filter(d => d.stage === client.winStage && d.stage_changed_at && d.created_at);
+    const pipeDeals = gewonnen.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
     const avgPipe   = pipeDeals.length
       ? Math.round(pipeDeals.reduce((s,d) => s + daysBetween(d.created_at, d.stage_changed_at), 0) / pipeDeals.length)
       : null;
-
-    // Änderungen letzte 7 Tage
     const changed7d = deals.filter(d => {
       const ref = d.stage_changed_at || d.updated_at || d.created_at;
-      return ref && (Date.now() - new Date(ref)) <= 7 * 86400000;
+      return ref && (now - new Date(ref)) <= 7 * 86400000;
     }).length;
 
     document.getElementById('s1').textContent = deals6M.length;
@@ -535,6 +580,7 @@ async function loadData() {
   }
 }
 
+renderClientSwitcher();
 if (apiKey) loadData();
 </script>
 </body>
