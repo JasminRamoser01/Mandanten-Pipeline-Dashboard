@@ -386,7 +386,15 @@ async function fetchRecords(client) {
     if (!r.ok) throw new Error(`Attio API Fehler ${r.status}: ${r.statusText}`);
     const j = await r.json();
     const fullBatch = j.data || [];
-    all = all.concat(fullBatch.filter(rec => !rec.values?.kanzlei?.length));
+    all = all.concat(fullBatch.filter(rec => {
+      const hasKanzlei = !!rec.values?.kanzlei?.length;
+      if (!hasKanzlei) return true; // aktiver Limetax-Deal ohne Kanzlei
+      // Mit Kanzlei: nur Übergeben + Limetax-Herkunft
+      const stage    = rec.values?.stage?.[0]?.status?.title || rec.values?.stage?.[0]?.title;
+      const herkunft = rec.values?.dealherkunft?.[0]?.title || rec.values?.dealherkunft?.[0]?.option?.title || '';
+      return stage === 'Übergeben'
+          && (herkunft === 'Limetax Netzwerk' || herkunft === 'Limetax Website');
+    }));
     if (fullBatch.length < 500) break;
     offset += 500;
   }
