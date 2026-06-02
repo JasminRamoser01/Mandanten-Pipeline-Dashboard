@@ -352,23 +352,24 @@ function parseEntry(e, nameMap = {}) {
     } catch (_) {}
   }
 
-  // Stage
-  let stage = null;
+  // Stage + stage_changed_at (active_from = when this stage was set)
+  let stage = null, stageChangedAt = null;
   try {
     const sv = e.entry_values?.bplus_stage;
     stage = sv?.[0]?.status?.title || sv?.[0]?.title || null;
+    stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
   } catch (_) {}
 
-  // Timestamps
+  // Timestamps — prefer stageChangedAt so "Letzte 7 Tage" reflects actual moves
   const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
-  const updated = e.updated_at || created;
+  const updated = stageChangedAt || e.updated_at || created;
 
   // Attio record link
   const recordLink = e.parent_record_id
     ? `${ATTIO_BASE}/lists/${LIST_ID}/${e.parent_record_id}`
     : null;
 
-  return { name, stage, created_at: created, updated_at: updated, link: recordLink, id: e.id?.entry_id };
+  return { name, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link: recordLink, id: e.id?.entry_id };
 }
 
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
