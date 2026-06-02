@@ -116,7 +116,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 
 /* ── DYNAMIC VIEW ── */
 .af { display: flex; flex-direction: column; gap: 6px; }
-.ai { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: flex-start; gap: 14px; text-decoration: none; color: inherit; transition: border-color .15s; }
+.ai { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; transition: border-color .15s; }
 .ai:hover { border-color: rgba(67,111,255,.35); }
 .aic { width: 28px; height: 28px; background: var(--brand-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; margin-top: 1px; }
 .ab { flex: 1; }
@@ -452,10 +452,10 @@ function renderDynamic(deals) {
     const icon = STAGE_ICONS[d.stage] || '📋';
     const stageLbl = d.stage || '—';
     const isNew = d.created_at && new Date(d.created_at) >= cutoff;
-    const refDate = d.updated_at || d.created_at;
-    const timeAgo = fmtTime(refDate);
     const pillClass = isNew ? 'cp' : 'cp changed';
     const pillText = isNew ? `Neu · ${stageLbl}` : `Aktualisiert · ${stageLbl}`;
+    const valStr = d.value && d.value > 0 ? fmtCurrency(d.value) + ' · ' : '';
+    const daysInStage = daysSince(d.stage_changed_at || d.created_at);
     const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
     const endTag = d.link ? 'a' : 'div';
 
@@ -463,12 +463,10 @@ function renderDynamic(deals) {
       <div class="aic">${icon}</div>
       <div class="ab">
         <div class="at">${d.name}</div>
-        <div class="am">
-          <span class="${pillClass}">${pillText}</span>
-          ${d.value && d.value > 0 ? `<span>${fmtCurrency(d.value)}</span>` : ''}
-          <span>Seit ${fmtDate(d.created_at)} &middot; ${timeAgo}</span>
-        </div>
+        <div class="am"><span class="${pillClass}">${pillText}</span></div>
       </div>
+      <div class="da">${valStr}Seit ${fmtDate(d.created_at)}</div>
+      ${badge(daysInStage)}
     </${endTag}>`;
   });
   html += `</div>`;
