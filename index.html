@@ -104,7 +104,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .sh { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; }
 .sl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-family: var(--mono); }
-.sct { font-size: 11px; color: var(--subtle); font-family: var(--mono); margin-left: auto; }
+.sct { font-size: 11px; color: var(--subtle); font-family: var(--mono); }
 .dr { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 4px; transition: border-color .15s; text-decoration: none; color: inherit; }
 .dr:hover { border-color: rgba(67,111,255,.35); }
 .dn { font-size: 14px; font-weight: 500; flex: 1; }
@@ -174,11 +174,11 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
   <div id="ec"></div>
 
   <div class="sb">
-    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals (6M)</div></div>
-    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Deal Value (6M)</div></div>
-    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">+Value (4W)</div></div>
+    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals (6 Mon.)</div></div>
+    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Dealwert (6 Mon.)</div></div>
+    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">+Wert (4 Wo.)</div></div>
     <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l">&Oslash; Pipeline</div></div>
-    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l">Win Rate</div></div>
+    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l">&Auml;nderungen (7T)</div></div>
   </div>
 
   <div class="tabs">
@@ -404,7 +404,7 @@ function renderStatic(deals) {
       <div class="sh">
         <span class="dot" style="background:${col}"></span>
         <span class="sl">${stage}</span>
-        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}${avgDays !== null ? ` · Ø ${avgDays}d in Stage` : ''}</span>
+        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}${avgDays !== null ? ` · Ø ${avgDays}d` : ''}</span>
       </div>`;
     items.forEach(d => {
       const daysInStage = daysSince(d.stage_changed_at || d.created_at);
@@ -465,7 +465,8 @@ function renderDynamic(deals) {
         <div class="at">${d.name}</div>
         <div class="am">
           <span class="${pillClass}">${pillText}</span>
-          <span>${timeAgo} &middot; ${fmtDate(refDate)}</span>
+          ${d.value && d.value > 0 ? `<span>${fmtCurrency(d.value)}</span>` : ''}
+          <span>Seit ${fmtDate(d.created_at)} &middot; ${timeAgo}</span>
         </div>
       </div>
     </${endTag}>`;
@@ -497,20 +498,24 @@ async function loadData() {
     const ms4W     = 28  * 86400000;
     const deals6M  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
     const deals4W  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
-    const uebern   = deals.filter(d => d.stage === 'Übernommen' && d.stage_changed_at && d.created_at);
-    const keinFit  = deals.filter(d => d.stage === 'Kein Fit').length;
-    const avgPipe  = uebern.length
-      ? Math.round(uebern.reduce((s,d) => s + (daysBetween(d.created_at, d.stage_changed_at)||0), 0) / uebern.length)
+    // Ø Pipeline: nur Deals die tatsächlich durch die Pipeline gelaufen sind (>0 Tage)
+    const uebern    = deals.filter(d => d.stage === 'Übernommen' && d.stage_changed_at && d.created_at);
+    const pipeDeals = uebern.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
+    const avgPipe   = pipeDeals.length
+      ? Math.round(pipeDeals.reduce((s,d) => s + daysBetween(d.created_at, d.stage_changed_at), 0) / pipeDeals.length)
       : null;
-    const winPct   = (uebern.length + keinFit)
-      ? Math.round(uebern.length / (uebern.length + keinFit) * 100)
-      : null;
+
+    // Änderungen letzte 7 Tage
+    const changed7d = deals.filter(d => {
+      const ref = d.stage_changed_at || d.updated_at || d.created_at;
+      return ref && (Date.now() - new Date(ref)) <= 7 * 86400000;
+    }).length;
 
     document.getElementById('s1').textContent = deals6M.length;
     document.getElementById('s2').textContent = fmtCurrency(deals6M.reduce((s,d) => s+(d.value||0),0));
     document.getElementById('s3').textContent = fmtCurrency(deals4W.reduce((s,d) => s+(d.value||0),0));
     document.getElementById('s4').textContent = avgPipe !== null ? avgPipe + 'd' : '—';
-    document.getElementById('s5').textContent = winPct  !== null ? winPct  + '%' : '—';
+    document.getElementById('s5').textContent = changed7d;
 
     const ts = new Date();
     document.getElementById('lu').textContent =
