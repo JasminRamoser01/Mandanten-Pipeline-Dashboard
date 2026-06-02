@@ -618,7 +618,7 @@ async function loadData() {
       : null;
     const changed7d = deals.filter(d => {
       const ref = d.stage_changed_at || d.updated_at || d.created_at;
-      return ref && (now - new Date(ref)) <= 7 * 86400000;
+      return ref && daysSince(ref) <= 7;
     }).length;
 
     document.getElementById('s1').textContent = deals6M.length;
