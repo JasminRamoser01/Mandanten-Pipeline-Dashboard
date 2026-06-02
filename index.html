@@ -134,7 +134,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 <div class="main" id="main">
   <div class="header">
     <div class="header-left">
-      <svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>
+      <span id="hlogo"></span>
       <div>
         <div class="title-row">
           <p class="t1" id="pname">Pipeline</p>
@@ -172,8 +172,9 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const ATTIO_BASE = 'https://app.attio.com';
 
-// bplus logo SVG (inline, uses currentColor so it works on active/inactive)
-const BPLUS_LOGO = `<svg width="14" height="16" viewBox="0 0 42 48" fill="none" style="vertical-align:middle;flex-shrink:0"><path d="M3 45L3 5L21 5" stroke="currentColor" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="miter"/><path d="M35 27L35 45L3 45" stroke="currentColor" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="miter"/><text x="7.5" y="38" font-size="23" font-weight="900" font-family="Arial Black,Impact,sans-serif" fill="currentColor">b</text><line x1="35" y1="2" x2="35" y2="19" stroke="#E8920A" stroke-width="5.5" stroke-linecap="square"/><line x1="26" y1="10.5" x2="44" y2="10.5" stroke="#E8920A" stroke-width="5.5" stroke-linecap="square"/></svg>`;
+// Header-Logos (je aktivem Client)
+const LOGO_LIMETAX = `<svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>`;
+const LOGO_BPLUS   = `<svg width="22" height="22" viewBox="0 0 151 151" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#bp)"><path d="M128.613 62.1347V150.329H-0.0078125V22.1602H87.5046V28.7566H6.61189V143.733H121.993V62.1347H128.613Z" fill="#2B2B2B"/><path d="M150.331 22.1641V28.7606H128.618V51.3864H121.999V28.7606H99.9551V22.1641H121.999V0H128.618V22.1641H150.331Z" fill="#EB8B1C"/><path d="M40.9159 129.706C38.0032 129.706 35.4083 129.073 33.1311 127.807C30.9069 126.487 29.1858 124.693 27.9677 122.424L27.7294 128.757H19.8652V72.5547H28.2855V92.5815C29.3976 90.7345 31.0393 89.125 33.2105 87.7529C35.4348 86.3809 38.0032 85.6948 40.9159 85.6948C44.5699 85.6948 47.7474 86.592 50.4482 88.3862C53.1491 90.1804 55.2144 92.7399 56.6443 96.0645C58.1271 99.3363 58.8685 103.215 58.8685 107.701C58.8685 112.186 58.1271 116.091 56.6443 119.416C55.2144 122.688 53.1491 125.221 50.4482 127.015C47.7474 128.809 44.5699 129.706 40.9159 129.706ZM39.5655 122.424C42.7959 122.424 45.3643 121.131 47.2708 118.545C49.1773 115.907 50.1305 112.292 50.1305 107.701C50.1305 103.109 49.1773 99.521 47.2708 96.9352C45.3643 94.2966 42.8223 92.9773 39.6449 92.9773C37.2618 92.9773 35.2229 93.5578 33.5283 94.7188C31.8336 95.8798 30.5362 97.5685 29.6359 99.7849C28.7356 101.949 28.2855 104.587 28.2855 107.701C28.2855 110.709 28.7356 113.321 29.6359 115.537C30.5362 117.754 31.8336 119.469 33.5283 120.682C35.2229 121.843 37.2353 122.424 39.5655 122.424Z" fill="#2B2B2B"/></g><defs><clipPath id="bp"><rect width="150.333" height="150.333" fill="white"/></clipPath></defs></svg>`;
 
 const CLIENTS = [
   {
@@ -231,10 +232,10 @@ function getClient() { return CLIENTS.find(c => c.id === activeClientId) || CLIE
 function renderClientSwitcher() {
   const client = getClient();
   document.getElementById('pname').textContent = `${client.name} Pipeline`;
-  document.getElementById('csw').innerHTML = CLIENTS.map(c => {
-    const inner = c.id === 'bplus' ? `${BPLUS_LOGO} bplus` : c.name;
-    return `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${inner}</button>`;
-  }).join('');
+  document.getElementById('hlogo').innerHTML = client.id === 'bplus' ? LOGO_BPLUS : LOGO_LIMETAX;
+  document.getElementById('csw').innerHTML = CLIENTS.map(c =>
+    `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${c.name}</button>`
+  ).join('');
 }
 
 function switchClient(id) {
