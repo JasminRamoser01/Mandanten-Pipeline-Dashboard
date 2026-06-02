@@ -12,7 +12,6 @@
   --fg: #2b2b2b;
   --muted: #6a6b68;
   --subtle: #8a8a8a;
-  --border: rgba(67,111,255,0.1);
   --border-strong: #c8c8c8;
   --divider: #e0e0e0;
   --n100: #efefef;
@@ -29,41 +28,16 @@
 body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-height: 100vh; }
 
 /* ── SETUP ── */
-.setup {
-  max-width: 460px;
-  margin: 80px auto 0;
-  background: var(--surface);
-  border: 1px solid var(--divider);
-  box-shadow: var(--sh2);
-  padding: 32px;
-}
+.setup { max-width: 460px; margin: 80px auto 0; background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh2); padding: 32px; }
 .setup-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
 .setup-logo strong { font-size: 15px; font-weight: 600; }
 .setup h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
 .setup p { font-size: 13px; color: var(--muted); margin: 0 0 24px; line-height: 1.6; }
 .setup label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-.setup input {
-  width: 100%;
-  border: 1px solid var(--border-strong);
-  padding: 10px 12px;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--fg);
-  background: var(--bg);
-  outline: none;
-  margin-bottom: 6px;
-}
+.setup input { width: 100%; border: 1px solid var(--border-strong); padding: 10px 12px; font-family: var(--mono); font-size: 13px; color: var(--fg); background: var(--bg); outline: none; margin-bottom: 6px; }
 .setup input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-bg); }
 .hint { font-size: 11px; color: var(--subtle); margin-bottom: 20px; font-family: var(--mono); line-height: 1.5; }
-.scopes {
-  background: var(--bg);
-  border: 1px solid var(--divider);
-  padding: 12px 14px;
-  margin-bottom: 20px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.8;
-}
+.scopes { background: var(--bg); border: 1px solid var(--divider); padding: 12px 14px; margin-bottom: 20px; font-size: 12px; color: var(--muted); line-height: 1.8; }
 .scopes strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; color: var(--fg); }
 .scope-tag { font-family: var(--mono); font-size: 11px; background: var(--brand-bg); color: var(--brand-t); padding: 1px 6px; display: inline-block; }
 
@@ -77,7 +51,6 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .hacts { display: flex; gap: 8px; align-items: center; }
 .rl { font-size: 12px; color: var(--subtle); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; font-family: var(--font); }
 .rl:hover { color: var(--muted); }
-
 .btn { background: var(--surface); border: 1px solid var(--border-strong); color: var(--fg); font-family: var(--font); font-size: 13px; font-weight: 500; padding: 8px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--sh1); transition: border-color .15s; }
 .btn:hover { border-color: var(--brand); }
 .btn.p { background: var(--brand); color: #fff; border-color: var(--brand); }
@@ -88,7 +61,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 
 /* ── CLIENT SWITCHER ── */
 .csw { display: flex; gap: 4px; }
-.csbtn { background: none; border: 1px solid var(--border-strong); color: var(--muted); font-family: var(--font); font-size: 11px; font-weight: 500; padding: 4px 10px; cursor: pointer; transition: all .15s; }
+.csbtn { background: none; border: 1px solid var(--border-strong); color: var(--muted); font-family: var(--font); font-size: 11px; font-weight: 500; padding: 4px 0; cursor: pointer; transition: all .15s; width: 82px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
 .csbtn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
 .csbtn:hover:not(.active) { border-color: var(--brand); color: var(--fg); }
 
@@ -99,12 +72,19 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .sc .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 
 /* ── TABS ── */
-.tabs { display: flex; border-bottom: 1px solid var(--divider); margin-bottom: 20px; }
+.tabs { display: flex; border-bottom: 1px solid var(--divider); margin-bottom: 0; }
 .tab { padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s; }
 .tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .tab:hover:not(.active) { color: var(--fg); }
 .tc { display: none; }
 .tc.active { display: block; }
+
+/* ── SORT BAR ── */
+.sbar { display: flex; align-items: center; gap: 8px; padding: 12px 0 16px; flex-wrap: wrap; }
+.sbar-lbl { font-size: 11px; color: var(--subtle); font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+.sbtn { background: none; border: 1px solid var(--border-strong); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 3px 10px; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.sbtn.active { background: var(--fg); color: #fff; border-color: var(--fg); }
+.sbtn:hover:not(.active) { border-color: var(--brand); color: var(--fg); }
 
 /* ── STATIC VIEW ── */
 .ss { margin-bottom: 24px; }
@@ -121,23 +101,11 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .dm { background: #fffbeb; color: #92400e; }
 .dh { background: #fff5f5; color: #9b1c1c; }
 
-/* ── DYNAMIC VIEW ── */
-.af { display: flex; flex-direction: column; gap: 6px; }
-.ai { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; transition: border-color .15s; }
-.ai:hover { border-color: rgba(67,111,255,.35); }
-.aic { width: 28px; height: 28px; background: var(--brand-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
-.ab { flex: 1; }
-.at { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
-.am { font-size: 11px; color: var(--muted); font-family: var(--mono); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.cp { font-size: 11px; font-family: var(--mono); padding: 2px 7px; background: var(--brand-bg); color: var(--brand-t); font-weight: 500; }
-.cp.changed { background: #fffbeb; color: #92400e; }
-
 /* ── STATES ── */
 .empty { padding: 48px 0; text-align: center; color: var(--muted); font-size: 13px; }
 .sk { background: linear-gradient(90deg, var(--n100) 25%, var(--divider) 50%, var(--n100) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; height: 50px; margin-bottom: 4px; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 .err { background: #fff5f5; border: 1px solid #e53e3e; color: #9b1c1c; font-size: 13px; padding: 12px 16px; margin-bottom: 16px; line-height: 1.5; }
-.err a { color: #9b1c1c; }
 </style>
 </head>
 <body>
@@ -195,6 +163,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
     <div class="tab active" onclick="sw('st')">&#128203; Stage-&Uuml;bersicht</div>
     <div class="tab" onclick="sw('dy')">&#9889; Letzte 7 Tage</div>
   </div>
+  <div id="sbar" class="sbar"></div>
   <div id="tst" class="tc active"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
   <div id="tdy" class="tc"><div class="sk"></div><div class="sk"></div></div>
 </div>
@@ -203,7 +172,26 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const ATTIO_BASE = 'https://app.attio.com';
 
+// bplus logo SVG (inline, uses currentColor so it works on active/inactive)
+const BPLUS_LOGO = `<svg width="14" height="16" viewBox="0 0 42 48" fill="none" style="vertical-align:middle;flex-shrink:0"><path d="M3 45L3 5L21 5" stroke="currentColor" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="miter"/><path d="M35 27L35 45L3 45" stroke="currentColor" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="miter"/><text x="7.5" y="38" font-size="23" font-weight="900" font-family="Arial Black,Impact,sans-serif" fill="currentColor">b</text><line x1="35" y1="2" x2="35" y2="19" stroke="#E8920A" stroke-width="5.5" stroke-linecap="square"/><line x1="26" y1="10.5" x2="44" y2="10.5" stroke="#E8920A" stroke-width="5.5" stroke-linecap="square"/></svg>`;
+
 const CLIENTS = [
+  {
+    id: 'limetax',
+    name: 'Limetax',
+    type: 'records',
+    objectSlug: 'deals',
+    stageField: 'stage',
+    winStage: 'Übergeben',
+    stageOrder: ['Neue Anfrage','Erstgespräch','Übergeben','Warteliste','Kein Fit'],
+    stageColors: {
+      'Neue Anfrage':'#436fff','Erstgespräch':'#22a05b','Übergeben':'#166534',
+      'Warteliste':'#6a6b68','Kein Fit':'#e53e3e',
+    },
+    stageIcons: {
+      'Neue Anfrage':'🟦','Erstgespräch':'🟢','Übergeben':'✅','Warteliste':'⏸️','Kein Fit':'🔴',
+    },
+  },
   {
     id: 'bplus',
     name: 'bplus',
@@ -221,33 +209,32 @@ const CLIENTS = [
       'Übernommen':'✅','Warteliste':'⏸️','Kein Fit':'🔴',
     },
   },
-  {
-    id: 'limetax',
-    name: 'Limetax',
-    type: 'records',
-    objectSlug: 'deals',
-    stageField: 'stage',
-    winStage: 'Übergeben',
-    stageOrder: ['Neue Anfrage','Erstgespräch','Übergeben','Warteliste','Kein Fit'],
-    stageColors: {
-      'Neue Anfrage':'#436fff','Erstgespräch':'#22a05b','Übergeben':'#166534',
-      'Warteliste':'#6a6b68','Kein Fit':'#e53e3e',
-    },
-    stageIcons: {
-      'Neue Anfrage':'🟦','Erstgespräch':'🟢','Übergeben':'✅','Warteliste':'⏸️','Kein Fit':'🔴',
-    },
-  },
 ];
 
-// ── CLIENT STATE ──────────────────────────────────────────────────────────────
-let activeClientId = localStorage.getItem('active_client') || 'bplus';
+const SORT_OPTIONS = [
+  { id: 'days_asc',     label: 'Tage ↑' },
+  { id: 'days_desc',    label: 'Tage ↓' },
+  { id: 'created_desc', label: 'Erstellt ↓' },
+  { id: 'value_desc',   label: 'Dealwert ↓' },
+  { id: 'name_asc',     label: 'Name A→Z' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let activeClientId = localStorage.getItem('active_client') || CLIENTS[0].id;
+let currentSort    = 'days_asc';
+let currentDeals   = null;
+let currentClient  = null;
+
 function getClient() { return CLIENTS.find(c => c.id === activeClientId) || CLIENTS[0]; }
 
+// ── CLIENT SWITCHER ───────────────────────────────────────────────────────────
 function renderClientSwitcher() {
-  document.getElementById('pname').textContent = `${getClient().name} Pipeline`;
-  document.getElementById('csw').innerHTML = CLIENTS.map(c =>
-    `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${c.name}</button>`
-  ).join('');
+  const client = getClient();
+  document.getElementById('pname').textContent = `${client.name} Pipeline`;
+  document.getElementById('csw').innerHTML = CLIENTS.map(c => {
+    const inner = c.id === 'bplus' ? `${BPLUS_LOGO} bplus` : c.name;
+    return `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${inner}</button>`;
+  }).join('');
 }
 
 function switchClient(id) {
@@ -255,6 +242,38 @@ function switchClient(id) {
   localStorage.setItem('active_client', id);
   renderClientSwitcher();
   loadData();
+}
+
+// ── SORT BAR ──────────────────────────────────────────────────────────────────
+function renderSortBar() {
+  document.getElementById('sbar').innerHTML =
+    `<span class="sbar-lbl">Sortierung</span>` +
+    SORT_OPTIONS.map(o =>
+      `<button class="sbtn${currentSort === o.id ? ' active' : ''}" onclick="setSort('${o.id}')">${o.label}</button>`
+    ).join('');
+}
+
+function setSort(id) {
+  currentSort = id;
+  renderSortBar();
+  if (currentDeals && currentClient) {
+    renderStatic(currentDeals, currentClient);
+    renderDynamic(currentDeals, currentClient);
+  }
+}
+
+function sortDeals(items) {
+  return [...items].sort((a, b) => {
+    switch (currentSort) {
+      case 'days_asc':     return (daysSince(a.stage_changed_at||a.created_at)||0) - (daysSince(b.stage_changed_at||b.created_at)||0);
+      case 'days_desc':    return (daysSince(b.stage_changed_at||b.created_at)||0) - (daysSince(a.stage_changed_at||a.created_at)||0);
+      case 'created_desc': return new Date(b.created_at||0) - new Date(a.created_at||0);
+      case 'created_asc':  return new Date(a.created_at||0) - new Date(b.created_at||0);
+      case 'value_desc':   return (b.value||0) - (a.value||0);
+      case 'name_asc':     return (a.name||'').localeCompare(b.name||'', 'de');
+      default: return 0;
+    }
+  });
 }
 
 // ── KEY MANAGEMENT ────────────────────────────────────────────────────────────
@@ -268,6 +287,7 @@ function saveKey() {
   document.getElementById('setup').style.display = 'none';
   document.getElementById('main').style.display = 'block';
   renderClientSwitcher();
+  renderSortBar();
   loadData();
 }
 function resetKey() {
@@ -355,7 +375,6 @@ async function fetchRecords(client) {
     if (!r.ok) throw new Error(`Attio API Fehler ${r.status}: ${r.statusText}`);
     const j = await r.json();
     const fullBatch = j.data || [];
-    // Limetax = Deals ohne Kanzlei-Referenz
     all = all.concat(fullBatch.filter(rec => !rec.values?.kanzlei?.length));
     if (fullBatch.length < 500) break;
     offset += 500;
@@ -363,8 +382,30 @@ async function fetchRecords(client) {
   return all;
 }
 
-// ── RECORD DATA LOOKUP (nur für Listen-basierte Clients) ─────────────────────
-// Batch-fetch parent records → { record_id: { name, value } }
+// ── ALLE DEAL-WERTE (für Limetax Gesamt-KPIs) ────────────────────────────────
+// Limetax-Ansicht zeigt Dealwert-KPIs über ALLE Kanzleien summiert.
+async function loadAllDealValues() {
+  let all = [], offset = 0;
+  while (true) {
+    const r = await fetch(`https://api.attio.com/v2/objects/deals/records/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 500, offset })
+    });
+    if (!r.ok) break;
+    const j = await r.json();
+    const batch = j.data || [];
+    all = all.concat(batch.map(rec => ({
+      created_at: rec.values?.created_at?.[0]?.value || rec.created_at || null,
+      value: rec.values?.value?.[0]?.currency_value ?? null,
+    })));
+    if (batch.length < 500) break;
+    offset += 500;
+  }
+  return all;
+}
+
+// ── RECORD DATA LOOKUP (für List-basierte Clients) ───────────────────────────
 async function loadRecordData(rawEntries) {
   const dataMap = {};
   const byObject = {};
@@ -418,7 +459,7 @@ function parseListEntry(e, dataMap, client) {
   const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
   const updated = stageChangedAt || e.updated_at || created;
   const link = e.parent_record_id ? `${ATTIO_BASE}/lists/${client.listId}/${e.parent_record_id}` : null;
-  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link, id: e.id?.entry_id };
+  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
 // ── PARSE: RECORD (Limetax) ───────────────────────────────────────────────────
@@ -431,7 +472,7 @@ function parseRecord(rec, client) {
   const created = rec.values?.created_at?.[0]?.value || rec.created_at || null;
   const updated = stageChangedAt || rec.updated_at || created;
   const link = rec.id?.record_id ? `${ATTIO_BASE}/deals/${rec.id.record_id}` : null;
-  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link, id: rec.id?.record_id };
+  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
@@ -439,16 +480,16 @@ function renderStatic(deals, client) {
   const byStage = {};
   client.stageOrder.forEach(s => byStage[s] = []);
   deals.forEach(d => {
-    const s = d.stage || 'Unbekannt';
-    if (!byStage[s]) byStage[s] = [];
-    byStage[s].push(d);
+    if (!byStage[d.stage]) byStage[d.stage] = [];
+    byStage[d.stage].push(d);
   });
   let html = '';
   client.stageOrder.forEach(stage => {
-    const items = byStage[stage] || [];
-    if (!items.length) return;
+    const raw = byStage[stage] || [];
+    if (!raw.length) return;
+    const items = sortDeals(raw);
     const col = client.stageColors[stage] || '#8a8a8a';
-    const stageDays = items.map(d => daysSince(d.stage_changed_at || d.created_at)).filter(d => d !== null);
+    const stageDays = items.map(d => daysSince(d.stage_changed_at || d.created_at)).filter(x => x !== null);
     const avgDays = stageDays.length ? Math.round(stageDays.reduce((a,b) => a+b,0) / stageDays.length) : null;
     html += `<div class="ss">
       <div class="sh">
@@ -473,43 +514,44 @@ function renderStatic(deals, client) {
   document.getElementById('tst').innerHTML = html;
 }
 
-// ── RENDER: DYNAMIC ───────────────────────────────────────────────────────────
+// ── RENDER: DYNAMIC (nach Stage gruppiert, Stage-Wechsel in 7T) ───────────────
 function renderDynamic(deals, client) {
-  const cutoff = new Date(Date.now() - 7 * 86400000);
-  const recent = deals
-    .filter(d => {
-      const u = d.updated_at ? new Date(d.updated_at) : null;
-      const c = d.created_at ? new Date(d.created_at) : null;
-      return (u && u >= cutoff) || (c && c >= cutoff);
-    })
-    .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+  // Nur Deals die in den letzten 7 Tagen in ihre aktuelle Stage gewechselt haben
+  const recent = deals.filter(d => d.stage_changed_at && daysSince(d.stage_changed_at) <= 7);
 
   if (!recent.length) {
-    document.getElementById('tdy').innerHTML = `<div class="empty">Keine Aktivität in den letzten 7 Tagen.</div>`;
+    document.getElementById('tdy').innerHTML = `<div class="empty">Keine Stage-Wechsel in den letzten 7 Tagen.</div>`;
     return;
   }
-  let html = `<div class="af">`;
-  recent.forEach(d => {
-    const icon = client.stageIcons[d.stage] || '📋';
-    const stageLbl = d.stage || '—';
-    const isNew = d.created_at && new Date(d.created_at) >= cutoff;
-    const pillClass = isNew ? 'cp' : 'cp changed';
-    const pillText = isNew ? `Neu · ${stageLbl}` : `Aktualisiert · ${stageLbl}`;
-    const valStr = d.value && d.value > 0 ? fmtCurrency(d.value) + ' · ' : '';
-    const daysInStage = daysSince(d.stage_changed_at || d.created_at);
-    const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
-    const endTag = d.link ? 'a' : 'div';
-    html += `<${tag} class="ai">
-      <div class="aic">${icon}</div>
-      <div class="ab">
-        <div class="at">${d.name}</div>
-        <div class="am"><span class="${pillClass}">${pillText}</span></div>
-      </div>
-      <div class="da">${valStr}Seit ${fmtDate(d.created_at)}</div>
-      ${badge(daysInStage)}
-    </${endTag}>`;
+
+  let html = '';
+  client.stageOrder.forEach(stage => {
+    const raw = recent.filter(d => d.stage === stage);
+    if (!raw.length) return;
+    const items = sortDeals(raw);
+    const col = client.stageColors[stage] || '#8a8a8a';
+    html += `<div class="ss">
+      <div class="sh">
+        <span class="dot" style="background:${col}"></span>
+        <span class="sl">${stage}</span>
+        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}</span>
+      </div>`;
+    items.forEach(d => {
+      const daysInStage = daysSince(d.stage_changed_at || d.created_at);
+      const valStr = d.value && d.value > 0 ? fmtCurrency(d.value) + ' · ' : '';
+      const timeAgo = fmtTime(d.stage_changed_at);
+      const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
+      const endTag = d.link ? 'a' : 'div';
+      html += `<${tag} class="dr">
+        <div class="dn">${d.name}</div>
+        <div class="da">${valStr}Seit ${fmtDate(d.created_at)} · ${timeAgo}</div>
+        ${badge(daysInStage)}
+      </${endTag}>`;
+    });
+    html += `</div>`;
   });
-  html += `</div>`;
+
+  if (!html) html = `<div class="empty">Keine Stage-Wechsel in den letzten 7 Tagen.</div>`;
   document.getElementById('tdy').innerHTML = html;
 }
 
@@ -535,15 +577,25 @@ async function loadData() {
       deals = raw.map(rec => parseRecord(rec, client));
     }
 
+    currentDeals  = deals;
+    currentClient = client;
     renderStatic(deals, client);
     renderDynamic(deals, client);
 
     // ── KPIs ──────────────────────────────────────────────────────────────────
-    const now       = Date.now();
-    const ms6M      = 180 * 86400000;
-    const ms4W      = 28  * 86400000;
+    const now     = Date.now();
+    const ms6M    = 180 * 86400000;
+    const ms4W    = 28  * 86400000;
+
+    // Limetax: Wert-KPIs über ALLE Kanzleien (Limetax + bplus + weitere)
+    let valuePool = deals;
+    if (client.id === 'limetax') {
+      try { valuePool = await loadAllDealValues(); } catch (_) {}
+    }
+
+    const pool6M    = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
+    const pool4W    = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
     const deals6M   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
-    const deals4W   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
     const gewonnen  = deals.filter(d => d.stage === client.winStage && d.stage_changed_at && d.created_at);
     const pipeDeals = gewonnen.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
     const avgPipe   = pipeDeals.length
@@ -555,8 +607,8 @@ async function loadData() {
     }).length;
 
     document.getElementById('s1').textContent = deals6M.length;
-    document.getElementById('s2').textContent = fmtCurrency(deals6M.reduce((s,d) => s+(d.value||0),0));
-    document.getElementById('s3').textContent = fmtCurrency(deals4W.reduce((s,d) => s+(d.value||0),0));
+    document.getElementById('s2').textContent = fmtCurrency(pool6M.reduce((s,d) => s+(d.value||0),0));
+    document.getElementById('s3').textContent = fmtCurrency(pool4W.reduce((s,d) => s+(d.value||0),0));
     document.getElementById('s4').textContent = avgPipe !== null ? avgPipe + 'd' : '—';
     document.getElementById('s5').textContent = changed7d;
 
@@ -581,6 +633,7 @@ async function loadData() {
 }
 
 renderClientSwitcher();
+renderSortBar();
 if (apiKey) loadData();
 </script>
 </body>
