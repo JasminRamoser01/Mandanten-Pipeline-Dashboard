@@ -335,6 +335,7 @@ function fmtCurrency(v) {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 }
 function stageHistoryIn7d(sv) {
+  if (sv && sv.length > 0) console.log('[stage-history] sv.length=', sv.length, JSON.stringify(sv.slice(0,3)));
   if (!sv || sv.length <= 1) return [];
   const cutoff = Date.now() - 7 * 86400000;
   return sv
