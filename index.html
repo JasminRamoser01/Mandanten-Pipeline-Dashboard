@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bplus Pipeline Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7f7;
+  --surface: #ffffff;
+  --fg: #2b2b2b;
+  --muted: #6a6b68;
+  --subtle: #8a8a8a;
+  --border: rgba(67,111,255,0.1);
+  --border-strong: #c8c8c8;
+  --divider: #e0e0e0;
+  --n100: #efefef;
+  --brand: #436fff;
+  --brand-h: #2d55e8;
+  --brand-bg: #eef3ff;
+  --brand-t: #2d55e8;
+  --sh1: 0 1px 2px rgba(0,0,0,.05), 0 0 0 1px rgba(67,111,255,.08);
+  --sh2: 0 4px 8px rgba(0,0,0,.08), 0 0 0 1px rgba(67,111,255,.1);
+  --font: 'Geist', system-ui, sans-serif;
+  --mono: 'Geist Mono', 'SF Mono', monospace;
+}
+* { box-sizing: border-box; font-family: var(--font); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-height: 100vh; }
+
+/* ── SETUP ── */
+.setup {
+  max-width: 460px;
+  margin: 80px auto 0;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  box-shadow: var(--sh2);
+  padding: 32px;
+}
+.setup-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.setup-logo strong { font-size: 15px; font-weight: 600; }
+.setup h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.setup p { font-size: 13px; color: var(--muted); margin: 0 0 24px; line-height: 1.6; }
+.setup label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.setup input {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--bg);
+  outline: none;
+  margin-bottom: 6px;
+}
+.setup input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-bg); }
+.hint { font-size: 11px; color: var(--subtle); margin-bottom: 20px; font-family: var(--mono); line-height: 1.5; }
+.scopes {
+  background: var(--bg);
+  border: 1px solid var(--divider);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.scopes strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; color: var(--fg); }
+.scope-tag { font-family: var(--mono); font-size: 11px; background: var(--brand-bg); color: var(--brand-t); padding: 1px 6px; display: inline-block; }
+
+/* ── MAIN ── */
+.main { display: none; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.header-left { display: flex; align-items: center; gap: 12px; }
+.t1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -.3px; }
+.t2 { font-size: 12px; color: var(--muted); margin: 2px 0 0; font-family: var(--mono); }
+.hacts { display: flex; gap: 8px; align-items: center; }
+.rl { font-size: 12px; color: var(--subtle); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; font-family: var(--font); }
+.rl:hover { color: var(--muted); }
+
+.btn { background: var(--surface); border: 1px solid var(--border-strong); color: var(--fg); font-family: var(--font); font-size: 13px; font-weight: 500; padding: 8px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--sh1); transition: border-color .15s; }
+.btn:hover { border-color: var(--brand); }
+.btn.p { background: var(--brand); color: #fff; border-color: var(--brand); }
+.btn.p:hover { background: var(--brand-h); }
+.btn:disabled { opacity: .5; pointer-events: none; }
+.spin { animation: spin .8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── SUMMARY ── */
+.sb { display: flex; gap: 12px; margin-bottom: 20px; }
+.sc { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; flex: 1; }
+.sc .n { font-size: 22px; font-weight: 600; font-family: var(--mono); line-height: 1; margin-bottom: 4px; }
+.sc .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── TABS ── */
+.tabs { display: flex; border-bottom: 1px solid var(--divider); margin-bottom: 20px; }
+.tab { padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s; }
+.tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.tab:hover:not(.active) { color: var(--fg); }
+.tc { display: none; }
+.tc.active { display: block; }
+
+/* ── STATIC VIEW ── */
+.ss { margin-bottom: 24px; }
+.sh { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.sl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-family: var(--mono); }
+.sct { font-size: 11px; color: var(--subtle); font-family: var(--mono); margin-left: auto; }
+.dr { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 4px; transition: border-color .15s; text-decoration: none; color: inherit; }
+.dr:hover { border-color: rgba(67,111,255,.35); }
+.dn { font-size: 14px; font-weight: 500; flex: 1; }
+.da { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.db { font-size: 11px; font-weight: 600; font-family: var(--mono); padding: 3px 8px; white-space: nowrap; }
+.dl { background: #f1fbf6; color: #166534; }
+.dm { background: #fffbeb; color: #92400e; }
+.dh { background: #fff5f5; color: #9b1c1c; }
+
+/* ── DYNAMIC VIEW ── */
+.af { display: flex; flex-direction: column; gap: 6px; }
+.ai { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: flex-start; gap: 14px; text-decoration: none; color: inherit; transition: border-color .15s; }
+.ai:hover { border-color: rgba(67,111,255,.35); }
+.aic { width: 28px; height: 28px; background: var(--brand-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+.ab { flex: 1; }
+.at { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+.am { font-size: 11px; color: var(--muted); font-family: var(--mono); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.cp { font-size: 11px; font-family: var(--mono); padding: 2px 7px; background: var(--brand-bg); color: var(--brand-t); font-weight: 500; }
+.cp.changed { background: #fffbeb; color: #92400e; }
+
+/* ── STATES ── */
+.empty { padding: 48px 0; text-align: center; color: var(--muted); font-size: 13px; }
+.sk { background: linear-gradient(90deg, var(--n100) 25%, var(--divider) 50%, var(--n100) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; height: 50px; margin-bottom: 4px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.err { background: #fff5f5; border: 1px solid #e53e3e; color: #9b1c1c; font-size: 13px; padding: 12px 16px; margin-bottom: 16px; line-height: 1.5; }
+.err a { color: #9b1c1c; }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="setup" id="setup">
+  <div class="setup-logo">
+    <svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>
+    <strong>bplus Pipeline Dashboard</strong>
+  </div>
+  <h2>Attio API-Key eingeben</h2>
+  <p>Der Key wird nur lokal in deinem Browser gespeichert (<code style="font-family:var(--mono);font-size:11px">localStorage</code>) und direkt an die Attio API gesendet — nirgendwo sonst hin.</p>
+  <label>Attio API Key</label>
+  <input type="password" id="ki" placeholder="att_••••••••••••••••••••••••••" autocomplete="off"/>
+  <div class="hint">Attio &rarr; Workspace Settings &rarr; Developers &rarr; New Access Token</div>
+  <div class="scopes">
+    <strong>Benötigte Scopes (alle Read)</strong>
+    <span class="scope-tag">record_permission:read</span>&ensp;
+    <span class="scope-tag">object_configuration:read</span>&ensp;
+    <span class="scope-tag">list_entry:read</span>
+  </div>
+  <button class="btn p" onclick="saveKey()">Dashboard öffnen &rarr;</button>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main">
+  <div class="header">
+    <div class="header-left">
+      <svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>
+      <div>
+        <p class="t1">bplus Pipeline</p>
+        <p class="t2" id="lu">Wird geladen&hellip;</p>
+      </div>
+    </div>
+    <div class="hacts">
+      <button class="rl" onclick="resetKey()">Key &auml;ndern</button>
+      <button class="btn" id="rb" onclick="loadData()"><span id="ri">&#8635;</span> Aktualisieren</button>
+    </div>
+  </div>
+
+  <div id="ec"></div>
+
+  <div class="sb">
+    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals gesamt</div></div>
+    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Aktive Stages</div></div>
+    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">&Oslash; Tage in Stage</div></div>
+    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l">Bewegt (7 Tage)</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="sw('st')">&#128203; Stage-&Uuml;bersicht</div>
+    <div class="tab" onclick="sw('dy')">&#9889; Letzte 7 Tage</div>
+  </div>
+  <div id="tst" class="tc active"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+  <div id="tdy" class="tc"><div class="sk"></div><div class="sk"></div></div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const LIST_ID = '06558c4e-ce5f-4cc7-af10-518707ccf662';
+const ATTIO_BASE = 'https://app.attio.com';
+
+const STAGE_COLORS = {
+  'Neuer Mandant': '#436fff',
+  'Erstgespräch':  '#22a05b',
+  'Angebot':       '#d97706',
+  'Vertrag':       '#8b5cf6',
+  'Übernommen':    '#166534',
+  'Warteliste':    '#6a6b68',
+  'Kein Fit':      '#e53e3e',
+};
+const STAGE_ORDER  = ['Neuer Mandant','Erstgespräch','Angebot','Vertrag','Übernommen','Warteliste','Kein Fit'];
+const STAGE_ICONS  = {'Neuer Mandant':'🟦','Erstgespräch':'🟢','Angebot':'🟡','Vertrag':'🟣','Übernommen':'✅','Warteliste':'⏸️','Kein Fit':'🔴'};
+
+// ── KEY MANAGEMENT ────────────────────────────────────────────────────────────
+let apiKey = localStorage.getItem('attio_bplus_key') || '';
+
+function saveKey() {
+  const v = document.getElementById('ki').value.trim();
+  if (!v) { alert('Bitte API-Key eingeben.'); return; }
+  apiKey = v;
+  localStorage.setItem('attio_bplus_key', v);
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+  loadData();
+}
+function resetKey() {
+  localStorage.removeItem('attio_bplus_key');
+  apiKey = '';
+  document.getElementById('setup').style.display = 'block';
+  document.getElementById('main').style.display = 'none';
+}
+document.getElementById('ki').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
+
+if (apiKey) {
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function daysSince(d) {
+  if (!d) return null;
+  return Math.floor((Date.now() - new Date(d)) / 86400000);
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function fmtTime(d) {
+  if (!d) return '';
+  const days = daysSince(d);
+  if (days === 0) return 'heute';
+  if (days === 1) return 'gestern';
+  return `vor ${days}d`;
+}
+function badge(days) {
+  if (days === null) return '';
+  const c = days <= 7 ? 'dl' : days <= 21 ? 'dm' : 'dh';
+  return `<span class="db ${c}">${days}d</span>`;
+}
+function sw(t) {
+  document.querySelectorAll('.tab').forEach((el, i) =>
+    el.classList.toggle('active', (i === 0 && t === 'st') || (i === 1 && t === 'dy'))
+  );
+  document.getElementById('tst').classList.toggle('active', t === 'st');
+  document.getElementById('tdy').classList.toggle('active', t === 'dy');
+}
+
+// ── ATTIO API ─────────────────────────────────────────────────────────────────
+async function fetchEntries() {
+  let allData = [], offset = 0;
+  while (true) {
+    const r = await fetch(`https://api.attio.com/v2/lists/${LIST_ID}/entries/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 500, offset })
+    });
+    if (r.status === 401) throw new Error('Ungültiger API-Key — bitte prüfen und neu eingeben.');
+    if (r.status === 403) throw new Error('Fehlende Berechtigungen — bitte API-Key Scopes prüfen (record_permission:read, object_configuration:read, list_entry:read).');
+    if (!r.ok) throw new Error(`Attio API Fehler ${r.status}: ${r.statusText}`);
+    const j = await r.json();
+    const batch = j.data || [];
+    allData = allData.concat(batch);
+    if (batch.length < 500) break;
+    offset += 500;
+  }
+  return allData;
+}
+
+// ── RECORD NAME LOOKUP ────────────────────────────────────────────────────────
+// The list entries query doesn't return the parent record's name, so we batch-
+// fetch the parent records separately and build a { record_id -> name } map.
+async function loadRecordNames(rawEntries) {
+  const nameMap = {};
+
+  // Group unique IDs by object slug (usually "deals")
+  const byObject = {};
+  rawEntries.forEach(e => {
+    if (!e.parent_record_id) return;
+    const slug = e.parent_object || 'deals';
+    if (!byObject[slug]) byObject[slug] = new Set();
+    byObject[slug].add(e.parent_record_id);
+  });
+
+  for (const [slug, idSet] of Object.entries(byObject)) {
+    const ids = [...idSet];
+    // Process in chunks of 100 to keep request bodies small
+    for (let i = 0; i < ids.length; i += 100) {
+      const chunk = ids.slice(i, i + 100);
+      try {
+        const r = await fetch(`https://api.attio.com/v2/objects/${slug}/records/query`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filter: { record_id: { $in: chunk } }, limit: 100 })
+        });
+        if (!r.ok) continue;
+        const j = await r.json();
+        (j.data || []).forEach(rec => {
+          const id = rec.id?.record_id;
+          const name = rec.values?.name?.[0]?.value
+                    || rec.values?.name?.[0]?.text
+                    || rec.values?.name?.[0]?.full_name
+                    || rec.values?.deal_name?.[0]?.value;
+          if (id && name) nameMap[id] = name;
+        });
+      } catch (_) {
+        // Best-effort; dashboard still works without names
+      }
+    }
+  }
+
+  return nameMap;
+}
+
+// ── PARSE ENTRY ───────────────────────────────────────────────────────────────
+// entry_values: { bplus_stage: [{status:{title}}], created_at: [{value}] }
+// Name comes from the parent record via nameMap (see loadRecordNames above)
+function parseEntry(e, nameMap = {}) {
+  let name = '—';
+
+  // Primary: name resolved via parent record batch fetch
+  if (e.parent_record_id && nameMap[e.parent_record_id]) {
+    name = nameMap[e.parent_record_id];
+  } else {
+    try {
+      const candidates = [
+        e.entry_values?.name?.[0]?.value,
+        e.entry_values?.name?.[0]?.text,
+        e.entry_values?.deal_name?.[0]?.value,
+        e.record_name,
+        e.name,
+      ];
+      for (const c of candidates) {
+        if (c && typeof c === 'string' && c.trim()) { name = c.trim(); break; }
+      }
+      if (name === '—' && e.parent_record_id) {
+        name = `Deal ${e.parent_record_id.slice(0, 8)}…`;
+      }
+    } catch (_) {}
+  }
+
+  // Stage
+  let stage = null;
+  try {
+    const sv = e.entry_values?.bplus_stage;
+    stage = sv?.[0]?.status?.title || sv?.[0]?.title || null;
+  } catch (_) {}
+
+  // Timestamps
+  const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
+  const updated = e.updated_at || created;
+
+  // Attio record link
+  const recordLink = e.parent_record_id
+    ? `${ATTIO_BASE}/lists/${LIST_ID}/${e.parent_record_id}`
+    : null;
+
+  return { name, stage, created_at: created, updated_at: updated, link: recordLink, id: e.id?.entry_id };
+}
+
+// ── RENDER: STATIC ────────────────────────────────────────────────────────────
+function renderStatic(deals) {
+  const byStage = {};
+  STAGE_ORDER.forEach(s => byStage[s] = []);
+  deals.forEach(d => {
+    const s = d.stage || 'Unbekannt';
+    if (!byStage[s]) byStage[s] = [];
+    byStage[s].push(d);
+  });
+
+  let html = '', totalDays = 0, cnt = 0, activeStages = 0;
+
+  STAGE_ORDER.forEach(stage => {
+    const items = byStage[stage] || [];
+    if (!items.length) return;
+    activeStages++;
+    const col = STAGE_COLORS[stage] || '#8a8a8a';
+    html += `<div class="ss">
+      <div class="sh">
+        <span class="dot" style="background:${col}"></span>
+        <span class="sl">${stage}</span>
+        <span class="sct">${items.length} Deal${items.length !== 1 ? 's' : ''}</span>
+      </div>`;
+    items.forEach(d => {
+      const days = daysSince(d.created_at);
+      if (days !== null) { totalDays += days; cnt++; }
+      const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
+      const endTag = d.link ? 'a' : 'div';
+      html += `<${tag} class="dr">
+        <div class="dn">${d.name}</div>
+        <div class="da">Seit ${fmtDate(d.created_at)}</div>
+        ${badge(days)}
+      </${endTag}>`;
+    });
+    html += `</div>`;
+  });
+
+  if (!html) html = `<div class="empty">Keine Deals gefunden.</div>`;
+  document.getElementById('tst').innerHTML = html;
+  document.getElementById('s1').textContent = deals.length;
+  document.getElementById('s2').textContent = activeStages;
+  document.getElementById('s3').textContent = cnt > 0 ? Math.round(totalDays / cnt) + 'd' : '—';
+}
+
+// ── RENDER: DYNAMIC ───────────────────────────────────────────────────────────
+function renderDynamic(deals) {
+  const cutoff = new Date(Date.now() - 7 * 86400000);
+
+  // Show deals where either updated_at OR created_at falls within 7 days
+  const recent = deals
+    .filter(d => {
+      const u = d.updated_at ? new Date(d.updated_at) : null;
+      const c = d.created_at ? new Date(d.created_at) : null;
+      return (u && u >= cutoff) || (c && c >= cutoff);
+    })
+    .sort((a, b) => {
+      const ta = new Date(b.updated_at || b.created_at);
+      const tb = new Date(a.updated_at || a.created_at);
+      return ta - tb;
+    });
+
+  document.getElementById('s4').textContent = recent.length;
+
+  if (!recent.length) {
+    document.getElementById('tdy').innerHTML = `<div class="empty">Keine Aktivität in den letzten 7 Tagen.</div>`;
+    return;
+  }
+
+  let html = `<div class="af">`;
+  recent.forEach(d => {
+    const icon = STAGE_ICONS[d.stage] || '📋';
+    const stageLbl = d.stage || '—';
+    const isNew = d.created_at && new Date(d.created_at) >= cutoff;
+    const refDate = d.updated_at || d.created_at;
+    const timeAgo = fmtTime(refDate);
+    const pillClass = isNew ? 'cp' : 'cp changed';
+    const pillText = isNew ? `Neu · ${stageLbl}` : `Aktualisiert · ${stageLbl}`;
+    const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
+    const endTag = d.link ? 'a' : 'div';
+
+    html += `<${tag} class="ai">
+      <div class="aic">${icon}</div>
+      <div class="ab">
+        <div class="at">${d.name}</div>
+        <div class="am">
+          <span class="${pillClass}">${pillText}</span>
+          <span>${timeAgo} &middot; ${fmtDate(refDate)}</span>
+        </div>
+      </div>
+    </${endTag}>`;
+  });
+  html += `</div>`;
+  document.getElementById('tdy').innerHTML = html;
+}
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadData() {
+  const btn = document.getElementById('rb');
+  const ri  = document.getElementById('ri');
+  btn.disabled = true;
+  ri.classList.add('spin');
+  document.getElementById('ec').innerHTML = '';
+  document.getElementById('tst').innerHTML = '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+  document.getElementById('tdy').innerHTML = '<div class="sk"></div><div class="sk"></div>';
+
+  try {
+    const raw     = await fetchEntries();
+    const nameMap = await loadRecordNames(raw);
+    const deals   = raw.map(e => parseEntry(e, nameMap));
+    renderStatic(deals);
+    renderDynamic(deals);
+    const now = new Date();
+    document.getElementById('lu').textContent =
+      `Aktualisiert ${now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · ${deals.length} Einträge`;
+  } catch (err) {
+    console.error(err);
+    let msg = err.message;
+    if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('networkerror')) {
+      msg = 'Netzwerkfehler — CORS oder keine Internetverbindung. Das Dashboard muss über eine URL (z.B. GitHub Pages) aufgerufen werden, nicht als lokale Datei.';
+    }
+    document.getElementById('ec').innerHTML = `<div class="err">&#9888; ${msg}</div>`;
+    document.getElementById('tst').innerHTML = `<div class="empty">Fehler beim Laden.</div>`;
+    document.getElementById('tdy').innerHTML = `<div class="empty">Fehler beim Laden.</div>`;
+    document.getElementById('lu').textContent = 'Fehler';
+    if (err.message.includes('API-Key')) setTimeout(resetKey, 2000);
+  } finally {
+    btn.disabled = false;
+    ri.classList.remove('spin');
+  }
+}
+
+if (apiKey) loadData();
+</script>
+</body>
+</html>
