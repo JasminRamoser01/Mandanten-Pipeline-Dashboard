@@ -171,7 +171,8 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const ATTIO_BASE = 'https://app.attio.com';
+const ATTIO_BASE  = 'https://app.attio.com';
+const ATTIO_WS    = 'limetaxgroup';
 
 // Header-Logos (je aktivem Client)
 const LOGO_LIMETAX = `<svg width="22" height="18" viewBox="0 0 146 122" fill="none"><path d="M116.489 104.511C105.692 115.314 90.79 122.001 74.364 122.001H0V47.5997C0 31.1653 6.6845 16.256 17.4819 5.45312L29.514 17.4913C21.8076 25.2101 17.0306 35.8596 17.0306 47.5997V104.962H74.364C86.098 104.962 96.7421 100.183 104.457 92.4725L116.489 104.511Z" fill="#2B2B2B"/><path d="M146.001 0V74.4018C146.001 90.8532 139.316 105.763 128.519 116.548L116.487 104.51C124.193 96.7999 128.97 86.1504 128.97 74.4018V17.0392H71.6368C59.8943 17.0392 49.2501 21.8187 41.5438 29.529L29.5117 17.4908C40.2921 6.6879 55.1938 0 71.6368 0H146.001Z" fill="#2B2B2B"/></svg>`;
@@ -492,7 +493,7 @@ function parseListEntry(e, dataMap, client) {
   const stageHistory = parseStageTrail(recData.stageHistoryRaw);
   const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
   const updated = stageChangedAt || e.updated_at || created;
-  const link = e.parent_record_id ? `${ATTIO_BASE}/lists/${client.listId}/${e.parent_record_id}` : null;
+  const link = e.parent_record_id ? `${ATTIO_BASE}/${ATTIO_WS}/deals/record/${e.parent_record_id}` : null;
   return { name, value, stage, stage_history: stageHistory, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
@@ -507,7 +508,7 @@ function parseRecord(rec, client) {
   const stageHistory = parseStageTrail(rec.values?.stage_history_log?.[0]?.value);
   const created = rec.values?.created_at?.[0]?.value || rec.created_at || null;
   const updated = stageChangedAt || rec.updated_at || created;
-  const link = rec.id?.record_id ? `${ATTIO_BASE}/deals/${rec.id.record_id}` : null;
+  const link = rec.id?.record_id ? `${ATTIO_BASE}/${ATTIO_WS}/deals/record/${rec.id.record_id}` : null;
   return { name, value, stage, stage_history: stageHistory, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
