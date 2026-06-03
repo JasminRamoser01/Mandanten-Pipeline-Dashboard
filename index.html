@@ -337,9 +337,9 @@ function fmtCurrency(v) {
   if (v === null || v === undefined) return '—';
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 }
-// Parst stage_history_log und gibt pro Pipeline die letzte Stage-Änderung
-// der letzten 7 Tage zurück.
-// Format: [{ client: 'bplus', from: 'Erstgespräch', to: 'Angebot' }, ...]
+// Parst stage_history_log und gibt pro Pipeline die vollständige Stage-Kette
+// der letzten 7 Tage zurück (z.B. Neue Anfrage → Erstgespräch → Übergeben).
+// Format: [{ client: 'bplus', stages: ['Erstgespräch', 'Angebot'] }, ...]
 function parseStageChanges(logText) {
   if (!logText) return [];
   const cutoff = new Date(Date.now() - 7 * 86400000);
@@ -349,10 +349,13 @@ function parseStageChanges(logText) {
     if (!m) return;
     const [, dt, client, from, to] = m;
     if (new Date(dt.replace(' ', 'T')) < cutoff) return;
-    const fromClean = from.trim() === '—' ? '' : from.trim();
-    byClient[client] = { client, from: fromClean, to: to.trim() };
+    if (!byClient[client]) byClient[client] = [];
+    const f = from.trim() === '—' ? null : from.trim();
+    const t = to.trim();
+    if (f && !byClient[client].includes(f)) byClient[client].push(f);
+    if (t && !byClient[client].includes(t)) byClient[client].push(t);
   });
-  return Object.values(byClient);
+  return Object.entries(byClient).map(([client, stages]) => ({ client, stages }));
 }
 function sw(t) {
   document.querySelectorAll('.tab').forEach((el, i) =>
@@ -578,8 +581,9 @@ function renderDynamic(deals, client) {
       const timeAgo = fmtTime(d.stage_changed_at);
       const changesHtml = d.stage_changes && d.stage_changes.length
         ? `<div class="changes-row">${d.stage_changes.map(c =>
-            `<span class="chg"><span class="chg-lbl">${c.client}</span>${c.from ? ` ${c.from} →` : ''} ${c.to}</span>`
-          ).join('')}</div>` : '';
+            `<span class="chg"><span class="chg-lbl">${c.client}</span> ${c.stages.join(' → ')}</span>`
+          ).join('')}</div>`
+        : `<div class="changes-row"><span class="chg">→ ${d.stage || '—'}</span></div>`;
       const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
       const endTag = d.link ? 'a' : 'div';
       html += `<${tag} class="dr">
