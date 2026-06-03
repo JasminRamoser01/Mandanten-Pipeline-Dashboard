@@ -95,6 +95,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 .dr { background: var(--surface); border: 1px solid var(--divider); box-shadow: var(--sh1); padding: 12px 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 4px; transition: border-color .15s; text-decoration: none; color: inherit; }
 .dr:hover { border-color: rgba(67,111,255,.35); }
 .dn { font-size: 14px; font-weight: 500; flex: 1; }
+.stage-trail { font-size: 10px; color: var(--subtle); font-family: var(--mono); margin-top: 3px; }
 .da { font-size: 12px; color: var(--muted); font-family: var(--mono); }
 .db { font-size: 11px; font-weight: 600; font-family: var(--mono); padding: 3px 8px; white-space: nowrap; }
 .dl { background: #f1fbf6; color: #166534; }
@@ -333,6 +334,26 @@ function fmtCurrency(v) {
   if (v === null || v === undefined) return '—';
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 }
+// Parst stage_history_log (n8n Custom Field) und gibt die Stages der letzten 7 Tage
+// in chronologischer Reihenfolge zurück.
+// Log-Format: "2026-06-03 08:29 [bplus] Erstgespräch → Angebot"
+//         oder "2026-06-03 08:29 [Limetax] Angebot → Übergeben"
+function parseStageTrail(logText) {
+  if (!logText) return [];
+  const cutoff = new Date(Date.now() - 7 * 86400000);
+  const stages = [];
+  logText.split('\n').filter(Boolean).forEach(line => {
+    const m = line.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s+\[[^\]]+\]\s+(.+?)\s*→\s*(.+)$/);
+    if (!m) return;
+    const [, dt, from, to] = m;
+    if (new Date(dt.replace(' ', 'T')) < cutoff) return;
+    const f = from.trim().replace(/^—\s*/, '');
+    const t = to.trim();
+    if (f && !stages.includes(f)) stages.push(f);
+    if (t && !stages.includes(t)) stages.push(t);
+  });
+  return stages;
+}
 function sw(t) {
   document.querySelectorAll('.tab').forEach((el, i) =>
     el.classList.toggle('active', (i === 0 && t === 'st') || (i === 1 && t === 'dy'))
@@ -438,10 +459,12 @@ async function loadRecordData(rawEntries) {
         const j = await r.json();
         (j.data || []).forEach(rec => {
           const id = rec.id?.record_id;
-          const name = rec.values?.name?.[0]?.value || rec.values?.name?.[0]?.text
-                    || rec.values?.name?.[0]?.full_name || null;
-          const value = rec.values?.value?.[0]?.currency_value ?? null;
-          if (id) dataMap[id] = { name, value };
+          const name           = rec.values?.name?.[0]?.value || rec.values?.name?.[0]?.text
+                             || rec.values?.name?.[0]?.full_name || null;
+          const value          = rec.values?.value?.[0]?.currency_value ?? null;
+          const stageChangedAt = rec.values?.stage_changed_at?.[0]?.value ?? null;
+          const stageHistoryRaw = rec.values?.stage_history_log?.[0]?.value ?? null;
+          if (id) dataMap[id] = { name, value, stageChangedAt, stageHistoryRaw };
         });
       } catch (_) {}
     }
@@ -464,11 +487,13 @@ function parseListEntry(e, dataMap, client) {
   const value = recData.value ?? null;
   const sv = e.entry_values?.[client.stageField];
   const stage = sv?.[0]?.status?.title || sv?.[0]?.title || null;
-  const stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
+  // n8n-Custom-Field hat Vorrang vor active_from
+  const stageChangedAt = recData.stageChangedAt || sv?.[0]?.active_from || sv?.[0]?.created_at || null;
+  const stageHistory = parseStageTrail(recData.stageHistoryRaw);
   const created = e.entry_values?.created_at?.[0]?.value || e.created_at || null;
   const updated = stageChangedAt || e.updated_at || created;
   const link = e.parent_record_id ? `${ATTIO_BASE}/lists/${client.listId}/${e.parent_record_id}` : null;
-  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
+  return { name, value, stage, stage_history: stageHistory, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
 // ── PARSE: RECORD (Limetax) ───────────────────────────────────────────────────
@@ -477,11 +502,13 @@ function parseRecord(rec, client) {
   const value = rec.values?.value?.[0]?.currency_value ?? null;
   const sv = rec.values?.[client.stageField];
   const stage = sv?.[0]?.status?.title || null;
-  const stageChangedAt = sv?.[0]?.active_from || sv?.[0]?.created_at || null;
+  const stageChangedAt = rec.values?.stage_changed_at?.[0]?.value
+                      || sv?.[0]?.active_from || sv?.[0]?.created_at || null;
+  const stageHistory = parseStageTrail(rec.values?.stage_history_log?.[0]?.value);
   const created = rec.values?.created_at?.[0]?.value || rec.created_at || null;
   const updated = stageChangedAt || rec.updated_at || created;
   const link = rec.id?.record_id ? `${ATTIO_BASE}/deals/${rec.id.record_id}` : null;
-  return { name, value, stage, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
+  return { name, value, stage, stage_history: stageHistory, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
@@ -549,10 +576,12 @@ function renderDynamic(deals, client) {
       const daysInStage = daysSince(d.stage_changed_at || d.created_at);
       const valStr = d.value && d.value > 0 ? fmtCurrency(d.value) + ' · ' : '';
       const timeAgo = fmtTime(d.stage_changed_at);
+      const trail = d.stage_history && d.stage_history.length > 1
+        ? `<div class="stage-trail">${d.stage_history.join(' → ')}</div>` : '';
       const tag = d.link ? `a href="${d.link}" target="_blank"` : 'div';
       const endTag = d.link ? 'a' : 'div';
       html += `<${tag} class="dr">
-        <div class="dn">${d.name}</div>
+        <div class="dn">${d.name}${trail}</div>
         <div class="da">${valStr}Seit ${fmtDate(d.created_at)} · ${timeAgo}</div>
         ${badge(daysInStage)}
       </${endTag}>`;
