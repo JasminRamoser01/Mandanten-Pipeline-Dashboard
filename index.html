@@ -155,11 +155,11 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
   <div id="ec"></div>
 
   <div class="sb">
-    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l">Deals (6 Mon.)</div></div>
-    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l">Dealwert (6 Mon.)</div></div>
-    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l">+Wert (4 Wo.)</div></div>
-    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l">&Oslash; Pipeline</div></div>
-    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l">&Auml;nderungen (7T)</div></div>
+    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l" id="l1"></div></div>
+    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l" id="l2"></div></div>
+    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l" id="l3"></div></div>
+    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l" id="l4"></div></div>
+    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l" id="l5"></div></div>
   </div>
 
   <div class="tabs">
@@ -188,6 +188,7 @@ const CLIENTS = [
     objectSlug: 'deals',
     stageField: 'stage',
     winStage: 'Übergeben',
+    kpiLabels: ['Limetax Deals (12 Mon.)','Limetax-Gruppe Planumsatz (12 Mon.)','Limetax-Gruppe Planumsatzwachstum (4 Wo.)','Ø Pipeline','Änderungen (7T)'],
     stageOrder: ['Neue Anfrage','Erstgespräch','Übergeben','Warteliste','Kein Fit'],
     stageColors: {
       'Neue Anfrage':'#436fff','Erstgespräch':'#22a05b','Übergeben':'#166534',
@@ -204,6 +205,7 @@ const CLIENTS = [
     listId: '06558c4e-ce5f-4cc7-af10-518707ccf662',
     stageField: 'bplus_stage',
     winStage: 'Übernommen',
+    kpiLabels: ['bplus Deals (12 Mon.)','bplus Planumsatz (12 Mon.)','bplus Planumsatzwachstum (4 Wo.)','Ø Pipeline','Änderungen (7T)'],
     stageOrder: ['Neuer Mandant','Erstgespräch','Angebot','Vertrag','Übernommen','Warteliste','Kein Fit'],
     stageColors: {
       'Neuer Mandant':'#436fff','Erstgespräch':'#22a05b','Angebot':'#d97706',
@@ -240,6 +242,10 @@ function renderClientSwitcher() {
   document.getElementById('csw').innerHTML = CLIENTS.map(c =>
     `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${c.name}</button>`
   ).join('');
+  client.kpiLabels.forEach((lbl, i) => {
+    const el = document.getElementById('l' + (i + 1));
+    if (el) el.textContent = lbl;
+  });
 }
 
 function switchClient(id) {
@@ -628,7 +634,7 @@ async function loadData() {
 
     // ── KPIs ──────────────────────────────────────────────────────────────────
     const now     = Date.now();
-    const ms6M    = 180 * 86400000;
+    const ms12M   = 365 * 86400000;
     const ms4W    = 28  * 86400000;
 
     // Limetax: Wert-KPIs über ALLE Kanzleien (Limetax + bplus + weitere)
@@ -637,9 +643,9 @@ async function loadData() {
       try { valuePool = await loadAllDealValues(); } catch (_) {}
     }
 
-    const pool6M    = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
+    const pool12M   = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
     const pool4W    = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
-    const deals6M   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms6M);
+    const deals12M  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
     const gewonnen  = deals.filter(d => d.stage === client.winStage && d.stage_changed_at && d.created_at);
     const pipeDeals = gewonnen.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
     const avgPipe   = pipeDeals.length
@@ -650,8 +656,8 @@ async function loadData() {
       return ref && daysSince(ref) <= 7;
     }).length;
 
-    document.getElementById('s1').textContent = deals6M.length;
-    document.getElementById('s2').textContent = fmtCurrency(pool6M.reduce((s,d) => s+(d.value||0),0));
+    document.getElementById('s1').textContent = deals12M.length;
+    document.getElementById('s2').textContent = fmtCurrency(pool12M.reduce((s,d) => s+(d.value||0),0));
     document.getElementById('s3').textContent = fmtCurrency(pool4W.reduce((s,d) => s+(d.value||0),0));
     document.getElementById('s4').textContent = avgPipe !== null ? avgPipe + 'd' : '—';
     document.getElementById('s5').textContent = changed7d;
