@@ -154,13 +154,7 @@ body { background: var(--bg); color: var(--fg); margin: 0; padding: 24px; min-he
 
   <div id="ec"></div>
 
-  <div class="sb">
-    <div class="sc"><div class="n" id="s1">&mdash;</div><div class="l" id="l1"></div></div>
-    <div class="sc"><div class="n" id="s2">&mdash;</div><div class="l" id="l2"></div></div>
-    <div class="sc"><div class="n" id="s3">&mdash;</div><div class="l" id="l3"></div></div>
-    <div class="sc"><div class="n" id="s4">&mdash;</div><div class="l" id="l4"></div></div>
-    <div class="sc"><div class="n" id="s5">&mdash;</div><div class="l" id="l5"></div></div>
-  </div>
+  <div id="kpi-container"><div class="sb"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div>
 
   <div class="tabs">
     <div class="tab active" onclick="sw('st')">&#128203; Stage-&Uuml;bersicht</div>
@@ -188,7 +182,22 @@ const CLIENTS = [
     objectSlug: 'deals',
     stageField: 'stage',
     winStage: 'Übergeben',
-    kpiLabels: ['Limetax Deals (12 Mon.)','Limetax-Gruppe Planumsatz (12 Mon.)','Limetax-Gruppe Planumsatzwachstum (4 Wo.)','Ø Pipeline','Änderungen (7T)'],
+    kpiRows: [
+      [
+        { id: 'gruppe_deals_12m', label: 'Limetax-Gruppe Deals (12 Mon.)' },
+        { id: 'gruppe_value_12m', label: 'Limetax-Gruppe Planumsatz (12 Mon.)' },
+        { id: 'gruppe_value_4w',  label: 'Limetax-Gruppe Planumsatzwachstum (4 Wo.)' },
+        { id: 'gruppe_new_7d',    label: 'Limetax-Gruppe neue Deals (7 T)' },
+      ],
+      [
+        { id: 'deals_12m',    label: 'Limetax Deals (12 Mon.)' },
+        { id: 'value_12m',    label: 'Limetax Planumsatz (12 Mon.)' },
+        { id: 'value_4w',     label: 'Limetax Planumsatzwachstum (4 Wo.)' },
+        { id: 'avg_pipeline', label: 'Ø Pipeline' },
+        { id: 'changed_7d',   label: 'Änderungen (7T)' },
+        { id: 'new_7d',       label: 'Limetax neue Deals (7 T)' },
+      ],
+    ],
     stageOrder: ['Neue Anfrage','Erstgespräch','Deep Dive','Angebot','Übergeben','Warteliste','Kein Fit'],
     stageColors: {
       'Neue Anfrage':'#436fff','Erstgespräch':'#22a05b','Deep Dive':'#0891b2',
@@ -206,7 +215,15 @@ const CLIENTS = [
     listId: '06558c4e-ce5f-4cc7-af10-518707ccf662',
     stageField: 'bplus_stage',
     winStage: 'Übernommen',
-    kpiLabels: ['bplus Deals (12 Mon.)','bplus Planumsatz (12 Mon.)','bplus Planumsatzwachstum (4 Wo.)','Ø Pipeline','Änderungen (7T)'],
+    kpiRows: [
+      [
+        { id: 'deals_12m',    label: 'bplus Deals (12 Mon.)' },
+        { id: 'value_12m',    label: 'bplus Planumsatz (12 Mon.)' },
+        { id: 'value_4w',     label: 'bplus Planumsatzwachstum (4 Wo.)' },
+        { id: 'avg_pipeline', label: 'Ø Pipeline' },
+        { id: 'new_7d',       label: 'bplus neue Deals (7 T)' },
+      ],
+    ],
     stageOrder: ['Neuer Mandant','Erstgespräch','Angebot','Vertrag','Übernommen','Warteliste','Kein Fit'],
     stageColors: {
       'Neuer Mandant':'#436fff','Erstgespräch':'#22a05b','Angebot':'#d97706',
@@ -243,10 +260,6 @@ function renderClientSwitcher() {
   document.getElementById('csw').innerHTML = CLIENTS.map(c =>
     `<button class="csbtn${c.id === activeClientId ? ' active' : ''}" onclick="switchClient('${c.id}')">${c.name}</button>`
   ).join('');
-  client.kpiLabels.forEach((lbl, i) => {
-    const el = document.getElementById('l' + (i + 1));
-    if (el) el.textContent = lbl;
-  });
 }
 
 function switchClient(id) {
@@ -521,6 +534,25 @@ function parseRecord(rec, client) {
   return { name, value, stage, stage_changes: stageChanges, created_at: created, updated_at: updated, stage_changed_at: stageChangedAt, link };
 }
 
+// ── RENDER: KPIs ─────────────────────────────────────────────────────────────
+function renderKPIs(client, vals) {
+  const fmt = (id, v) => {
+    if (v === null || v === undefined) return '—';
+    if (id.includes('value')) return fmtCurrency(v);
+    if (id === 'avg_pipeline') return v + 'd';
+    return String(v);
+  };
+  let html = '';
+  client.kpiRows.forEach(row => {
+    html += `<div class="sb">`;
+    row.forEach(k => {
+      html += `<div class="sc"><div class="n">${fmt(k.id, vals[k.id])}</div><div class="l">${k.label}</div></div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('kpi-container').innerHTML = html;
+}
+
 // ── RENDER: STATIC ────────────────────────────────────────────────────────────
 function renderStatic(deals, client) {
   const byStage = {};
@@ -614,6 +646,7 @@ async function loadData() {
   btn.disabled = true;
   ri.classList.add('spin');
   document.getElementById('ec').innerHTML = '';
+  document.getElementById('kpi-container').innerHTML = '<div class="sb"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>';
   document.getElementById('tst').innerHTML = '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
   document.getElementById('tdy').innerHTML = '<div class="sk"></div><div class="sk"></div>';
 
@@ -634,34 +667,47 @@ async function loadData() {
     renderDynamic(deals, client);
 
     // ── KPIs ──────────────────────────────────────────────────────────────────
-    const now     = Date.now();
-    const ms12M   = 365 * 86400000;
-    const ms4W    = 28  * 86400000;
+    const now   = Date.now();
+    const ms12M = 365 * 86400000;
+    const ms4W  = 28  * 86400000;
+    const ms7D  = 7   * 86400000;
 
-    // Limetax: Wert-KPIs über ALLE Kanzleien (Limetax + bplus + weitere)
-    let valuePool = deals;
-    if (client.id === 'limetax') {
-      try { valuePool = await loadAllDealValues(); } catch (_) {}
-    }
-
-    const pool12M   = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
-    const pool4W    = valuePool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
-    const deals12M  = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
-    const gewonnen  = deals.filter(d => d.stage === client.winStage && d.stage_changed_at && d.created_at);
-    const pipeDeals = gewonnen.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
-    const avgPipe   = pipeDeals.length
+    const deals12M   = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
+    const deals4W    = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
+    const dealsNew7D = deals.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms7D);
+    const gewonnen   = deals.filter(d => d.stage === client.winStage && d.stage_changed_at && d.created_at);
+    const pipeDeals  = gewonnen.filter(d => (daysBetween(d.created_at, d.stage_changed_at) || 0) > 0);
+    const avgPipe    = pipeDeals.length
       ? Math.round(pipeDeals.reduce((s,d) => s + daysBetween(d.created_at, d.stage_changed_at), 0) / pipeDeals.length)
       : null;
-    const changed7d = deals.filter(d => {
+    const changed7d  = deals.filter(d => {
       const ref = d.stage_changed_at || d.updated_at || d.created_at;
       return ref && daysSince(ref) <= 7;
     }).length;
 
-    document.getElementById('s1').textContent = deals12M.length;
-    document.getElementById('s2').textContent = fmtCurrency(pool12M.reduce((s,d) => s+(d.value||0),0));
-    document.getElementById('s3').textContent = fmtCurrency(pool4W.reduce((s,d) => s+(d.value||0),0));
-    document.getElementById('s4').textContent = avgPipe !== null ? avgPipe + 'd' : '—';
-    document.getElementById('s5').textContent = changed7d;
+    const kpiValues = {
+      deals_12m:    deals12M.length,
+      value_12m:    deals12M.reduce((s,d) => s+(d.value||0),0),
+      value_4w:     deals4W.reduce((s,d) => s+(d.value||0),0),
+      avg_pipeline: avgPipe,
+      changed_7d:   changed7d,
+      new_7d:       dealsNew7D.length,
+    };
+
+    if (client.id === 'limetax') {
+      try {
+        const pool      = await loadAllDealValues();
+        const pool12M   = pool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms12M);
+        const pool4W    = pool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms4W);
+        const poolNew7D = pool.filter(d => d.created_at && (now - new Date(d.created_at)) <= ms7D);
+        kpiValues.gruppe_deals_12m = pool12M.length;
+        kpiValues.gruppe_value_12m = pool12M.reduce((s,d) => s+(d.value||0),0);
+        kpiValues.gruppe_value_4w  = pool4W.reduce((s,d) => s+(d.value||0),0);
+        kpiValues.gruppe_new_7d    = poolNew7D.length;
+      } catch (_) {}
+    }
+
+    renderKPIs(client, kpiValues);
 
     const ts = new Date();
     document.getElementById('lu').textContent =
